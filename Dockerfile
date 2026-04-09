@@ -12,6 +12,6 @@ WORKDIR /app
 COPY --from=build /app/out .
 
 ENV ASPNETCORE_URLS=http://+:$PORT
-EXPOSE 10000
+EXPOSE $PORT
 
 ENTRYPOINT ["dotnet", "AurHER.dll"]
