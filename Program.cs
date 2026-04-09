@@ -42,7 +42,7 @@
             Password = userInfo[1],
             Database = uri.AbsolutePath.Trim('/'),
             SslMode = Npgsql.SslMode.Require,
-            TrustServerCertificate = true
+        
         };
 
         connectionString = builderConn.ToString();
@@ -123,7 +123,7 @@
         {
             Console.WriteLine("Migration failed: " + ex.Message);
         }
-        
+
     }
     // Error handling
     if (!app.Environment.IsDevelopment())
@@ -147,7 +147,7 @@
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
 
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-    app.Urls.Add($"http://0.0.0.0:{port}");
+    var hostport = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+    app.Urls.Add($"http://0.0.0.0:{hostport}");
 
     app.Run();
