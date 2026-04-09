@@ -1,4 +1,3 @@
-ENTRYPOINT ["dotnet", "AurHER.dll"]
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
@@ -6,6 +5,7 @@ WORKDIR /app
 COPY . ./
 RUN dotnet restore
 RUN dotnet publish -c Release -o out
+
 # Run stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
