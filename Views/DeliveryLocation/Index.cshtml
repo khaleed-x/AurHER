@@ -1,0 +1,100 @@
+@model IEnumerable<AurHER.Models.DeliveryLocation>
+
+@{
+    ViewData["Title"] = "Delivery Locations";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/delivery-location.css" />
+}
+
+
+<div class="page-actions animate-in">
+    <div>
+        <h1 class="page-title">Delivery Locations</h1>
+        <p class="page-subtitle">Manage delivery fees by state or region</p>
+    </div>
+    <a href="/DeliveryLocation/Create" class="btn-add">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Location
+    </a>
+</div>
+
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success animate-in">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-error animate-in">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        @TempData["Error"]
+    </div>
+}
+
+<div class="table-card animate-in delay-1">
+    <div class="table-header">
+        <span class="table-title">All Locations</span>
+        <span class="table-count">@Model.Count() total</span>
+    </div>
+
+    @if (Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Location / State</th>
+                    <th>Delivery Fee (₦)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="location-name">@item.Name</div>
+                        </td>
+                        <td>
+                            <span class="fee-badge">₦@item.Fee.ToString("N0")</span>
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="/DeliveryLocation/Edit/@item.Id" class="btn-edit">
+                                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Edit
+                                </a>
+                               <form method="post" action="/DeliveryLocation/Delete" class="delete-form" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete @item.Name? This action cannot be undone.');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn-delete">
+                                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div class="empty-title">No delivery locations yet</div>
+            <div class="empty-subtitle">Click "Add Location" to set up delivery fees for different states</div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/delivery-location.js"></script>
+}

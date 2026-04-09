@@ -1,0 +1,201 @@
+@model AurHER.DTOs.Admin.ProductDetailDto
+@{
+    ViewData["Title"] = "Product Details";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-products.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="page-actions animate-in">
+    <div>
+        <h1 class="page-title">Manage Product</h1>
+        <p class="page-subtitle">Variants, images and full product details</p>
+    </div>
+    <a href="/Product/Index" class="btn-cancel">← Back to Products</a>
+</div>
+
+<!-- ── Alerts ── -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success animate-in">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-error animate-in">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- ── Product Info Card ── -->
+<div class="details-header-card animate-in delay-1">
+    <div class="details-product-info">
+        <div class="details-product-name">@Model.Name</div>
+        <div class="details-product-meta">
+            @Model.CategoryName · Added @Model.CreatedAt.ToString("MMM dd, yyyy") ·
+            <span class="status-badge @(Model.IsActive ? "active" : "inactive")" style="display:inline-flex;">
+                <span class="status-dot"></span>
+                @(Model.IsActive ? "Active" : "Inactive")
+            </span>
+        </div>
+        <div class="details-product-desc">@Model.Description</div>
+    </div>
+    <div class="details-header-actions">
+        <a href="/Product/Edit/@Model.Id" class="btn-edit">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Product
+        </a>
+    </div>
+</div>
+
+<!-- ── Variants Section ── -->
+<div class="section-card animate-in delay-2">
+    <div class="section-header">
+        <span class="section-title">Variants (@Model.Variants.Count)</span>
+        <a href="/Product/AddVariant?productId=@Model.Id" class="btn-section-add">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Variant
+        </a>
+    </div>
+    <div class="section-body">
+        @if (Model.Variants.Any())
+        {
+            <table class="variants-table">
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Size</th>
+                        <th>Color</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var variant in Model.Variants)
+                    {
+                        <tr>
+                            <td><span class="sku-code">@variant.SKU</span></td>
+                            <td>@variant.Size</td>
+                            <td>@variant.Color</td>
+                            <td>₦@variant.Price.ToString("N0")</td>
+                            <td data-stock="@variant.StockQuantity">
+                                <span class="stock-badge"></span>
+                            </td>
+                            <td>
+                                <div class="action-btns">
+                                    <a href="/Product/EditVariant/@variant.Id" class="btn-edit">
+                                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        Edit
+                                    </a>
+                                    <form method="post" action="/Product/DeleteVariant" class="delete-variant-form" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@variant.Id" />
+                                        <input type="hidden" name="productId" value="@Model.Id" />
+                                        <button type="submit" class="btn-delete">
+                                            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="no-items-text">No variants yet — click "Add Variant" to add one</div>
+        }
+    </div>
+</div>
+
+<!-- ── Images Section ── -->
+<div class="section-card animate-in delay-3">
+    <div class="section-header">
+        <span class="section-title">Images (@Model.Images.Count)</span>
+    </div>
+    <div class="section-body">
+
+        <!-- Existing Images -->
+        @if (Model.Images.Any())
+        {
+            <div class="images-grid">
+                @foreach (var image in Model.Images)
+                {
+                    <div class="image-card @(image.IsPrimary ? "is-primary" : "")">
+                        @if (image.IsPrimary)
+                        {
+                            <span class="primary-badge">Primary</span>
+                        }
+                        <img src="@image.ImageUrl" alt="Product image" />
+                        <div class="image-card-actions">
+                            @if (!image.IsPrimary)
+                            {
+                                <form method="post" action="/Product/SetPrimaryImage" style="margin:0;flex:1;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@image.Id" />
+                                    <input type="hidden" name="productId" value="@Model.Id" />
+                                    <button type="submit" class="btn-img-action btn-img-primary" style="width:100%;">
+                                        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        Primary
+                                    </button>
+                                </form>
+                            }
+                            <form method="post" action="/Product/DeleteImage" class="delete-image-form" style="margin:0;flex:1;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@image.Id" />
+                                <input type="hidden" name="productId" value="@Model.Id" />
+                                <button type="submit" class="btn-img-action btn-img-delete" style="width:100%;">
+                                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Upload Form -->
+        <form method="post"
+              action="/Product/AddImage"
+              enctype="multipart/form-data"
+              class="upload-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="productId" value="@Model.Id" />
+
+            <input type="file"
+                   name="file"
+                   id="imageFileInput"
+                   accept=".jpg,.jpeg,.png,.webp"
+                   style="display:none;" />
+
+            <label for="imageFileInput" class="upload-input" id="fileLabel" style="cursor:pointer;">
+                Choose image file...
+            </label>
+
+            <label class="upload-checkbox-group">
+                <input type="checkbox" name="isPrimary" value="true" />
+                Set as primary
+            </label>
+
+            <button type="submit" class="btn-upload">
+                <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+                Upload
+            </button>
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-products.js" asp-append-version="true"></script>
+}

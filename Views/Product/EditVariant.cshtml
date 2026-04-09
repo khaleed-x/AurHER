@@ -1,0 +1,172 @@
+@model AurHER.DTOs.Admin.UpdateVariantDto
+@{
+    ViewData["Title"] = "Edit Variant";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-products.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="page-header animate-in">
+    <h1 class="page-title">Edit Variant</h1>
+    <p class="page-subtitle">Update variant details</p>
+</div>
+
+<!-- ── Form Card ── -->
+<div class="form-card animate-in delay-1">
+    <div class="form-card-header">
+        <div>
+            <div class="form-card-title">Variant Details</div>
+            <div class="form-card-subtitle">Make your changes below</div>
+        </div>
+        <span class="editing-badge">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            SKU: @Model.SKU
+        </span>
+    </div>
+    <div class="form-card-body">
+
+        <form method="post" asp-controller="Product" asp-action="EditVariant">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ProductId" />
+
+            <!-- Size & Color -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Size">Size <span>*</span></label>
+                
+                        <select asp-for="Size" class="form-select" id="sizeInput">
+                            <option value="">— Select size —</option>
+                            <optgroup label="Clothing">
+                                <option>XS</option>
+                                <option>S</option>
+                                <option>M</option>
+                                <option>L</option>
+                                <option>XL</option>
+                                <option>XXL</option>
+                                <option>XXXL</option>
+                                <option>One Size</option>
+                            </optgroup>
+                            <optgroup label="Numeric (UK)">
+                                <option>6</option>
+                                <option>8</option>
+                                <option>10</option>
+                                <option>12</option>
+                                <option>14</option>
+                                <option>16</option>
+                                <option>18</option>
+                                <option>20</option>
+                            </optgroup>
+                            <optgroup label="EU Sizes">
+                                <option>36</option>
+                                <option>38</option>
+                                <option>40</option>
+                                <option>42</option>
+                                <option>44</option>
+                                <option>46</option>
+                            </optgroup>
+                        </select>
+
+                    <span asp-validation-for="Size" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Color">Color <span>*</span></label>
+                   <input list="colorOptions" asp-for="Color" class="form-input" 
+                        placeholder="Select or type color" id="colorInput" />
+                    <datalist id="colorOptions">
+                    <option value="Black">Black</option>
+                    <option value="White">White</option>
+                    <option value="Red">Red</option>
+                    <option value="Pink">Pink</option>
+                    <option value="Hot Pink">Hot Pink</option>
+                    <option value="Navy Blue">Navy Blue</option>
+                    <option value="Royal Blue">Royal Blue</option>
+                    <option value="Burgundy">Burgundy</option>
+                    <option value="Emerald Green">Emerald Green</option>
+                    <option value="Nude">Nude</option>
+                    <option value="Cream">Cream</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Grey">Grey</option>
+                    <option value="Brown">Brown</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Purple">Purple</option>
+                    <option value="Yellow">Yellow</option>
+
+                    </datalist>
+
+                    <span asp-validation-for="Color" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- Price & Stock -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Price">Price (₦) <span>*</span></label>
+                
+                        <input list="priceOptions" asp-for="Price" class="form-input"
+                            placeholder="Select or enter price (₦)" id="priceInput" />
+                        <datalist id="priceOptions">
+                            <option value="5000">₦5,000</option>
+                            <option value="10000">₦10,000</option>
+                            <option value="15000">₦15,000</option>
+                            <option value="20000">₦20,000</option>
+                            <option value="25000">₦25,000</option>
+                            <option value="30000">₦30,000</option>
+                            <option value="35000">₦35,000</option>
+                            <option value="40000">₦40,000</option>
+                            <option value="45000">₦45,000</option>
+                            <option value="50000">₦50,000</option>
+                            <option value="55000">₦55,000</option>
+                            <option value="60000">₦60,000</option>
+                            <option value="65000">₦65,000</option>
+                            <option value="70000">₦70,000</option>
+                            <option value="75000">₦75,000</option>
+                            <option value="80000">₦80,000</option>
+                            <option value="85000">₦85,000</option>
+                            <option value="90000">₦90,000</option>
+                            <option value="95000">₦95,000</option>
+                            <option value="100000">₦100,000</option>
+                        </datalist>
+
+                    <span asp-validation-for="Price" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="StockQuantity">Stock Quantity <span>*</span></label>
+                   <select asp-for="StockQuantity" class="form-select">
+                        <option value="">— Select quantity —</option>
+                        @for (int i = 1; i <= 1000; i++)
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    </select>
+                    <span asp-validation-for="StockQuantity" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- SKU -->
+            <div class="form-group">
+                <label class="form-label" asp-for="SKU">SKU <span>*</span></label>
+                <input type="text" asp-for="SKU" class="form-input" />
+                <span asp-validation-for="SKU" class="field-error"></span>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Update Variant
+                </button>
+                <a href="/Product/Details/@Model.ProductId" class="btn-cancel">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-products.js" asp-append-version="true"></script>
+}

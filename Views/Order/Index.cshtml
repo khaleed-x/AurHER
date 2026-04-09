@@ -1,0 +1,185 @@
+@model AurHER.DTOs.Admin.OrderDashboardDto
+@using AurHER.Models.Enums
+
+@{
+    ViewData["Title"] = "Orders";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentStatus = ViewBag.CurrentStatus as OrderStatus?;
+    var currentPaymentStatus = ViewBag.CurrentPaymentStatus as PaymentStatus?;
+
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-orders.css" />
+     
+}
+
+<div class="orders-container">
+    <div class="page-actions animate-in">
+        <div class="orders-header">
+            <h1 class="orders-title">Orders</h1>
+            <p class="orders-subtitle">Manage and track customer orders</p>
+        </div>
+
+
+
+
+
+
+<!-- ── Summary Cards ── -->
+<div class="inventory-summary animate-in delay-1">
+
+    <a href="/Order/Index?filter=all" class="summary-card all">
+        <div class="stat-icon blue">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+        </div>  
+        <div class="summary-info">
+            <div class="summary-count">@Model.Counts.TotalOrderCount</div>
+            <div class="summary-label">Total Orders</div>
+        </div>
+    </a>
+
+    <a href="/Order/Index?filter=low" class="summary-card low">
+        <div class="stat-icon amber">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+         </div>
+        <div class="summary-info">
+            <div class="summary-count">@Model.Counts.OrderToday</div>
+            <div class="summary-label">Today's Orders</div>
+        </div>
+    </a>
+
+</div>
+
+<!-- ── Filter Tabs ── -->
+<div class="filter-tabs animate-in delay-2">
+<div class="status-buttons">
+    <a href="@Url.Action("Index", new { status = "", search = currentSearch, paymentStatus = currentPaymentStatus })" 
+       class="filter-tab   @(currentStatus == null ? "active" : "")">
+        All Order Status
+    </a>
+    <a href="@Url.Action("Index", new { status = "Pending", search = currentSearch, paymentStatus = currentPaymentStatus })" 
+       class="filter-tab low  @(currentStatus?.ToString() == "Pending" ? "active" : "")">
+        Pending
+    </a>
+    <a href="@Url.Action("Index", new { status = "Processing", search = currentSearch, paymentStatus = currentPaymentStatus })" 
+       class="filter-tab low  @(currentStatus?.ToString() == "Processing" ? "active" : "")">
+        Processing
+    </a>
+    <a href="@Url.Action("Index", new { status = "Shipped", search = currentSearch, paymentStatus = currentPaymentStatus })" 
+       class="filter-tab low  @(currentStatus?.ToString() == "Shipped" ? "active" : "")">
+        Shipped
+    </a>
+    <a href="@Url.Action("Index", new { status = "Delivered", search = currentSearch, paymentStatus = currentPaymentStatus })" 
+       class="filter-tab  @(currentStatus?.ToString() == "Delivered" ? "active" : "")">
+        Delivered
+    </a>
+    <a href="@Url.Action("Index", new { status = "Cancelled", search = currentSearch, paymentStatus = currentPaymentStatus })" 
+       class="filter-tab out @(currentStatus?.ToString() == "Cancelled" ? "active" : "")">
+        Cancelled
+    </a>
+</div>
+
+</div>
+
+
+
+ <!-- Search & Filter Bar -->
+    <div class="orders-filters animate-in delay-3">
+        <form method="get" asp-action="Index" class="orders-search-form">
+            <div class="orders-search-group">
+                <svg class="orders-search-icon" viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <input type="text" name="search" value="@currentSearch" placeholder="Search by confirmation code, customer name, or email..." class="orders-search-input" />
+            </div>
+
+            <div class="orders-filter-group">
+                <select name="status" class="orders-filter-select">
+                    <option value="">All Order Status</option>
+                    <option value="Pending" selected="@(currentStatus == OrderStatus.Pending)">Pending</option>
+                    <option value="Processing" selected="@(currentStatus == OrderStatus.Processing)">Processing</option>
+                    <option value="Shipped" selected="@(currentStatus == OrderStatus.Shipped)">Shipped</option>
+                    <option value="Delivered" selected="@(currentStatus == OrderStatus.Delivered)">Delivered</option>
+                    <option value="Cancelled" selected="@(currentStatus == OrderStatus.Cancelled)">Cancelled</option>
+                </select>
+
+                <select name="paymentStatus" class="orders-filter-select">
+                    <option value="">All Payment Status</option>
+                    <option value="Pending" selected="@(currentPaymentStatus == PaymentStatus.Pending)">Pending</option>
+                    <option value="Completed" selected="@(currentPaymentStatus == PaymentStatus.Completed)">Completed</option>
+                    <option value="Failed" selected="@(currentPaymentStatus == PaymentStatus.Failed)">Failed</option>
+                    <option value="Refunded" selected="@(currentPaymentStatus == PaymentStatus.Refunded)">Refunded</option>
+                </select>
+
+                <button type="submit" class="orders-filter-btn">Apply Filters</button>
+                
+                @if (!string.IsNullOrEmpty(currentSearch) || currentStatus.HasValue || currentPaymentStatus.HasValue)
+                {
+                    <a href="@Url.Action("Index")" class="orders-clear-btn">Clear All</a>
+                }
+            </div>
+        </form>
+    </div>
+
+        <div class="orders-card animate-in delay-4">
+            <div class="orders-card-header">
+                <div>
+                    <h3 class="orders-card-title">All Orders</h3>
+                    <span class="orders-card-count">@Model.Orders.Count() total</span>
+                </div>
+            </div>
+            <div class="orders-table-wrapper">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Confirmation Code</th>
+                            <th>Customer</th>
+                            <th>Email</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.Orders)
+                        {
+                            <tr>
+                                <td data-label="ID">#@order.Id</td>
+                                <td data-label="Confirmation Code"><span class="order-code">@order.ConfirmationCode</span></td>
+                                <td data-label="Customer">@order.CustomerName</td>
+                                <td data-label="Email">@order.Email</td>
+                                <td data-label="Total" class="order-total">₦@order.TotalAmount.ToString("N0")</td>
+                                <td data-label="Status">
+                                    <span class="order-status-badge order-status-@order.Status.ToString().ToLower()">
+                                        @order.Status
+                                    </span>
+                                </td>
+                                <td data-label="Payment">
+                                    <span class="order-payment-badge order-payment-@order.PaymentStatus.ToString().ToLower()">
+                                        @order.PaymentStatus
+                                    </span>
+                                </td>
+                                <td data-label="Date">@order.CreatedAt.ToString("dd MMM yyyy")</td>
+                                <td data-label="Actions">
+                                    <a href="@Url.Action("Details", new { id = order.Id })" class="order-btn-view">
+                                        <svg viewBox="0 0 24 24" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+    </div>    </div>  
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-orders.js"></script>
+}

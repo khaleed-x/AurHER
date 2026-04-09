@@ -1,0 +1,218 @@
+
+@model AurHER.DTOs.Store.HomePageDto
+@{
+    ViewData["Title"] = "Home";
+    ViewData["Description"] = "Premium women's fashion — curated for the modern African woman.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-home.css" asp-append-version="true" />
+}
+
+
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-tag">
+            <span class="hero-tag-dot"></span>
+            New Collection Available
+        </div>
+        <h1 class="hero-title">
+            Style That Speaks<br/>
+            Before You <span class="accent">Do</span>
+        </h1>
+        <p class="hero-subtitle">
+            Premium women's fashion curated for the modern African woman.
+            Discover pieces that celebrate your beauty and confidence.
+        </p>
+        <div class="hero-actions">
+            <a href="/Shop/Index" class="hero-btn-primary">
+                Shop Now
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/Shop/Index?sort=newest" class="hero-btn-secondary">
+                New Arrivals
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ── Categories ── -->
+@if (Model.Categories.Any())
+{
+    <section class="section">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <div class="section-tag">Shop by Category</div>
+                <h2 class="section-title">Find Your Style</h2>
+                <p class="section-subtitle">Browse our carefully curated categories and discover pieces made for you</p>
+            </div>
+
+            <div class="categories-grid" >
+                @foreach (var category in Model.Categories)
+                {
+                               
+            
+                        <a href="/Shop/Index?category=@Uri.EscapeDataString(category.Name)" class="category-card reveal"  >
+                            <div class="category-icon">
+                                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                            </div>
+                            <div class="category-name">@category.Name</div>
+                            <div class="category-count">@category.ProductCount item@(category.ProductCount != 1 ? "s" : "")</div>
+                    </a>
+               
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ── New Arrivals ── -->
+@if (Model.NewArrivals.Any())
+{
+    <section class="section section-alt">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <div class="section-tag">Just In</div>
+                <h2 class="section-title">New Arrivals</h2>
+                <p class="section-subtitle">The latest additions to our collection — fresh styles just for you</p>
+            </div>
+
+            <div class="products-grid">
+                @foreach (var product in Model.NewArrivals)
+                {
+                    <a href="/Shop/Details/@product.Id" class="product-card reveal">
+                        <div class="product-card-image">
+                            @if (!string.IsNullOrEmpty(product.PrimaryImage))
+                            {
+                                <img src="@product.PrimaryImage" alt="@product.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="product-card-placeholder">
+                                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                                </div>
+                            }
+                            <span class="product-card-badge">New</span>
+                        </div>
+                        <div class="product-card-body">
+                            @if (!string.IsNullOrEmpty(product.CategoryName))
+                            {
+                                <div class="product-card-category">@product.CategoryName</div>
+                            }
+                            <div class="product-card-name">@product.Name</div>
+                            <div class="product-card-price">
+                                @if (product.LowestPrice.HasValue)
+                                {
+                                    if (product.LowestPrice == product.HighestPrice)
+                                    {
+                                        <span>₦@product.LowestPrice.Value.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="from">from</span>
+                                        <span>₦@product.LowestPrice.Value.ToString("N0")</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="no-price">See details</span>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+
+            <div class="view-all-wrap reveal">
+                <a href="/Shop/Index" class="btn-view-all">
+                    View All Products
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ── Collections ── -->
+@if (Model.Collections.Any())
+{
+    <section class="section">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <div class="section-tag">Curated For You</div>
+                <h2 class="section-title">Our Collections</h2>
+                <p class="section-subtitle">Handpicked styles grouped to inspire your next look</p>
+            </div>
+
+            @foreach (var collection in Model.Collections)
+            {
+                <div class="collection-block reveal">
+                    <div class="collection-header">
+                        <div class="collection-name">
+                            <span>@collection.Name</span>
+                        </div>
+                        <a href="/Shop/Index" class="collection-link">
+                            View all
+                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+
+                    @if (collection.Products.Any())
+                    {
+                        <div class="products-grid">
+                            @foreach (var product in collection.Products)
+                            {
+                                <a href="/Shop/Details/@product.Id" class="product-card">
+                                    <div class="product-card-image">
+                                        @if (!string.IsNullOrEmpty(product.PrimaryImage))
+                                        {
+                                            <img src="@product.PrimaryImage" alt="@product.Name" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <div class="product-card-placeholder">
+                                                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="product-card-body">
+                                        <div class="product-card-name">@product.Name</div>
+                                        <div class="product-card-price">
+                                            @if (product.LowestPrice.HasValue)
+                                            {
+                                                <span class="from">from</span>
+                                                <span>₦@product.LowestPrice.Value.ToString("N0")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="no-price">See details</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- ── Empty Store ── -->
+@if (!Model.NewArrivals.Any() && !Model.Collections.Any())
+{
+    <section class="section">
+        <div class="section-inner">
+            <div class="empty-store">
+                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <p>Store coming soon — check back later!</p>
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script src="~/js/store-home.js" asp-append-version="true"></script>
+}

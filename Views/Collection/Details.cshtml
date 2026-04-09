@@ -1,0 +1,128 @@
+@model AurHER.DTOs.Admin.CollectionDetailDto
+@{
+    ViewData["Title"] = "Manage Collection";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-collections.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="page-actions animate-in">
+    <div>
+        <h1 class="page-title">@Model.Name</h1>
+        <p class="page-subtitle">Manage products in this collection</p>
+    </div>
+    <a href="/Collection/Index" class="btn-cancel">
+        ← Back to Collections
+    </a>
+</div>
+
+<!-- ── Alert Messages ── -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success animate-in">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<!-- ── Details Grid ── -->
+<div class="details-grid animate-in delay-1">
+
+    <!-- Products in Collection -->
+    <div class="details-card">
+        <div class="details-card-header">
+            <span class="details-card-title">Products in Collection</span>
+            <span class="table-count">@Model.Products.Count total</span>
+        </div>
+        <div class="details-card-body">
+            @if (Model.Products.Any())
+            {
+                @foreach (var product in Model.Products)
+                {
+                    <div class="collection-product-item">
+                        <div class="product-thumb">
+                            @if (!string.IsNullOrEmpty(product.PrimaryImage))
+                            {
+                                <img src="@product.PrimaryImage" alt="@product.ProductName" />
+                            }
+                            else
+                            {
+                                <div class="product-thumb-placeholder">
+                                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                                </div>
+                            }
+                        </div>
+                        <div class="product-item-info">
+                            <div class="product-item-name">@product.ProductName</div>
+                            <div class="product-item-meta">
+                                @product.CategoryName · @product.VariantCount variant@(product.VariantCount != 1 ? "s" : "")
+                            </div>
+                        </div>
+                        <form method="post" action="/Collection/RemoveProduct" class="remove-form" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="collectionId" value="@Model.Id" />
+                            <input type="hidden" name="productId" value="@product.ProductId" />
+                            <button type="submit" class="btn-remove">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Remove
+                            </button>
+                        </form>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-products-text">
+                    No products in this collection yet.<br/>
+                    Add some from the panel on the right.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Add Products -->
+    <div class="details-card">
+        <div class="details-card-header">
+            <span class="details-card-title">Add Products</span>
+            <span class="table-count">@Model.AvailableProducts.Count available</span>
+        </div>
+        <div class="details-card-body">
+            @if (Model.AvailableProducts.Any())
+            {
+                <form method="post" asp-controller="Collection" asp-action="AddProduct" class="add-product-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="CollectionId" value="@Model.Id" />
+
+                    <select name="ProductId" class="add-product-select" id="productSelect">
+                        <option value="0">— Select a product —</option>
+                        @foreach (var product in Model.AvailableProducts)
+                        {
+                            <option value="@product.Id">
+                                @product.Name @(!string.IsNullOrEmpty(product.CategoryName) ? $"({product.CategoryName})" : "")
+                            </option>
+                        }
+                    </select>
+
+                    <button type="submit" class="btn-add-product" id="addProductBtn" disabled>>
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="no-products-text">
+                    All active products are already in this collection!
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-collections.js" asp-append-version="true"></script>
+}

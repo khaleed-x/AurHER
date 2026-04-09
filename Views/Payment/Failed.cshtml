@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Payment Failed";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-checkout.css" asp-append-version="true" />
+}
+
+<div class="success-page">
+    
+    <!-- Failed Icon -->
+    <div class="success-icon" style="background: rgba(239, 68, 68, 0.1);">
+        <svg viewBox="0 0 24 24" style="stroke: #ef4444; fill: none;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+    </div>
+
+    <h1 class="success-title" style="color: #ef4444;">Payment Failed ❌</h1>
+    <p class="success-subtitle">
+        Your payment could not be processed. This could be due to insufficient funds, incorrect card details, or a network issue.
+    </p>
+
+    <!-- Order Info Card -->
+    <div class="success-code-card" style="border-left-color: #ef4444;">
+        <div class="success-code-label">Order Summary</div>
+        <div class="success-code" style="font-size: 1rem;">Order: @ViewBag.ConfirmationCode</div>
+        <div class="success-code" style="font-size: 1.2rem; margin-top: 8px;">Amount: ₦@ViewBag.TotalAmount.ToString("N0")</div>
+        <div class="success-code-note">
+            No money has been deducted from your account.
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="success-actions">
+        <a href="/Payment/Retry?orderId=@ViewBag.OrderId" class="btn-track-order">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Try Again
+        </a>
+        <a href="/Cart/Index" class="btn-continue-shopping-success">
+            Return to Cart
+        </a>
+    </div>
+
+</div>

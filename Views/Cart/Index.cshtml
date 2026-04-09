@@ -1,0 +1,166 @@
+@model AurHER.DTOs.Store.CartDto
+@{
+    ViewData["Title"] = "Your Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-cart.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="cart-page-header">
+    <div class="cart-page-header-inner">
+        <h1 class="cart-page-title">Your Cart</h1>
+        <p class="cart-page-subtitle">
+            @if (Model.Items.Any())
+            {
+                <text>@Model.TotalItems item@(Model.TotalItems != 1 ? "s" : "") in your cart</text>
+            }
+            else
+            {
+                <text>Your cart is empty</text>
+            }
+        </p>
+    </div>
+</div>
+
+@if (Model.Items.Any())
+{
+    <div class="cart-layout">
+
+        <!-- ── Cart Items ── -->
+        <div class="cart-items-card">
+            <div class="cart-items-header">
+                <span class="cart-items-title">Cart Items</span>
+                <form method="post" action="/Cart/Clear" id="clearCartForm" style="margin:0;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="cart-clear-btn">Clear Cart</button>
+                </form>
+            </div>
+
+            @foreach (var item in Model.Items)
+            {
+                <div class="cart-item">           
+
+                    <!-- Image -->
+                    <div class="cart-item-image">
+                        @if (!string.IsNullOrEmpty(item.PrimaryImage))
+                        {
+                            <img src="@item.PrimaryImage" alt="@item.ProductName" />
+                        }
+                        else
+                        {
+                            <div class="cart-item-image-placeholder">
+                                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Info -->
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">@item.ProductName</div>
+                        <div class="cart-item-variant">@item.Size · @item.Color</div>
+                        <div class="cart-item-price">₦@item.Price.ToString("N0") each</div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="cart-item-controls">
+
+                        <!-- Quantity -->
+                        <div class="cart-qty">
+                            <button type="button"
+                                    class="cart-qty-btn"
+                                    data-item-id="@item.CartItemId"
+                                    data-action="minus">−</button>
+                            <span class="cart-qty-num" id="qty-@item.CartItemId">@item.Quantity</span>
+                            <button type="button"
+                                    class="cart-qty-btn"
+                                    data-item-id="@item.CartItemId"
+                                    data-action="plus">+</button>
+                        </div>
+
+                        <!-- Hidden update form -->
+                        <form method="post"
+                              action="/Cart/Update"
+                              id="update-form-@item.CartItemId"
+                              style="display:none;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <input type="hidden" name="quantity" value="@item.Quantity" />
+                        </form>
+
+                        <!-- Subtotal -->
+                        <div class="cart-item-subtotal">₦@item.Subtotal.ToString("N0")</div>
+
+                        <!-- Remove -->
+                        <form method="post"
+                              action="/Cart/Remove"
+                              class="remove-form"
+                              style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <button type="submit" class="cart-remove-btn" title="Remove item">
+                                <svg viewBox="0 0 24 24">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- ── Order Summary ── -->
+        <div class="order-summary">
+            <div class="summary-title">Order Summary</div>
+
+            <div class="summary-row">
+                <span class="summary-label">Items (@Model.TotalItems)</span>
+                <span class="summary-value">₦@Model.Subtotal.ToString("N0")</span>
+            </div>
+
+            <div class="summary-row">
+                <span class="summary-label">Delivery</span>
+                <span class="summary-value" style="color:var(--success);">Calculated at checkout</span>
+            </div>
+
+            <div class="summary-row total">
+                <span class="summary-label">Subtotal</span>
+                <span class="summary-value">₦@Model.Subtotal.ToString("N0")</span>
+            </div>
+
+            <a href="/Checkout/Index" class="btn-checkout">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                Proceed to Checkout
+            </a>
+
+            <a href="/Shop/Index" class="btn-continue-shopping">
+                ← Continue Shopping
+            </a>
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="cart-layout">
+        <div class="empty-cart">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <div class="empty-cart-title">Your cart is empty</div>
+            <div class="empty-cart-text">Looks like you haven't added anything yet — let's fix that!</div>
+            <a href="/Shop/Index" class="btn-start-shopping">
+                Start Shopping
+                <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/store-cart.js" asp-append-version="true"></script>
+}

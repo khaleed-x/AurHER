@@ -1,0 +1,169 @@
+@model AurHER.DTOs.Admin.LoginDto
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Access — AurHER</title>
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+<body>
+
+<div class="login-page">
+
+    <!-- ── Left — Brand Panel ── -->
+    <div class="login-brand-panel">
+        <div class="brand-panel-line"></div>
+
+        <div class="brand-panel-content">
+
+            <div class="brand-panel-logo">
+                <img src="~/images/aurher-logo.png" alt="AurHER" />
+            </div>
+
+            <div class="brand-panel-name">
+                <span class="aur">Aur</span><span class="her">HER</span>
+            </div>
+
+            <p class="brand-panel-tagline">Admin Authentication</p>
+
+            <div class="brand-panel-divider"></div>
+
+            <p class="brand-panel-quote">
+                "Style is a way to say who you are <span>without having to speak.</span>"
+            </p>
+
+        </div>
+    </div>
+
+    <!-- ── Right — Form Panel ── -->
+    <div class="login-form-panel">
+        <div class="login-card">
+
+          
+            <div class="login-card-header">
+                <div class="login-card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h1 class="login-card-title">Welcome Back</h1>
+                <p class="login-card-subtitle">Sign in to your admin panel</p>
+            </div>
+
+          
+            @if (!ViewData.ModelState.IsValid )
+            {
+                <div class="login-error">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span class="login-error-text">
+                        @Html.ValidationSummary(true)
+                    </span>
+                </div>
+            }
+            
+
+            <!-- Login Form -->
+            <form method="post"
+                  asp-controller="Admin"
+                  asp-action="Login"
+                  class="login-form"
+                  id="loginForm">
+
+                @Html.AntiForgeryToken()
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label class="form-label" for="UserName">Username</label>
+                    <div class="form-input-wrapper">
+                        <input type="text"
+                               id="UserName"
+                               name="UserName"
+                               class="form-input"
+                               placeholder="Enter your username"
+                               autocomplete="username"
+                               value="@Model?.UserName"
+                               required />
+                        <svg class="form-input-icon" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <span asp-validation-for="UserName" style="font-size:0.75rem;color:#EF4444;"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label class="form-label" for="passwordInput">Password</label>
+                    <div class="form-input-wrapper">
+                        <input type="password"
+                               id="passwordInput"
+                               name="PassWord"
+                               class="form-input"
+                               placeholder="Enter your password"
+                               autocomplete="current-password"
+                               required />
+                        <svg class="form-input-icon" viewBox="0 0 24 24">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span class="password-toggle" id="passwordToggle" title="Show/Hide password">
+                            <!-- Eye Open -->
+                            <svg id="eyeOpen" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <!-- Eye Closed -->
+                            <svg id="eyeClosed" viewBox="0 0 24 24" style="display:none;">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <span asp-validation-for="PassWord" style="font-size:0.75rem;color:#EF4444;"></span>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    <span id="loginBtnText">Sign In</span>
+                </button>
+
+            </form>
+
+            <!-- Card Footer -->
+            <div class="login-card-footer">
+                <p class="login-card-footer-text">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    Secured & encrypted access only
+
+                    <li>
+                        <a href="/Home/index" style="font-size:0.75rem;color:#EF4444;">-->Home</a>
+                    </li>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="~/js/login.js" asp-append-version="true"></script>
+
+</body>
+</html>

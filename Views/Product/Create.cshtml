@@ -1,0 +1,76 @@
+@model AurHER.DTOs.Admin.CreateProductDto
+@{
+    ViewData["Title"] = "Create Product";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-products.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="page-header animate-in">
+    <h1 class="page-title">Create Product</h1>
+    <p class="page-subtitle">Add a new product to your store</p>
+</div>
+
+<!-- ── Form Card ── -->
+<div class="form-card animate-in delay-1">
+    <div class="form-card-header">
+        <div>
+            <div class="form-card-title">Product Details</div>
+            <div class="form-card-subtitle">Fill in the information below. You can add variants and images after saving.</div>
+        </div>
+    </div>
+    <div class="form-card-body">
+
+        <form method="post" asp-controller="Product" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <!-- Name -->
+            <div class="form-group">
+                <label class="form-label" asp-for="Name">Product Name <span>*</span></label>
+                <input type="text" asp-for="Name" class="form-input" placeholder="e.g. Elegant Black Dress" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label class="form-label" asp-for="Description">Description <span>*</span></label>
+                <textarea asp-for="Description" class="form-textarea" placeholder="Describe the product..."></textarea>
+                <span asp-validation-for="Description" class="field-error"></span>
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label class="form-label" asp-for="CategoryId">Category <span>*</span></label>
+                <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                    <option value="">— Select a category —</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="field-error"></span>
+            </div>
+
+            <!-- Is Active -->
+            <div class="form-group">
+                <label class="form-checkbox-group">
+                    <input type="checkbox" asp-for="IsActive" class="form-checkbox" />
+                    <span class="form-checkbox-label">Active — visible to customers in the store</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Product
+                </button>
+                <a href="/Product/Index" class="btn-cancel">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-products.js" asp-append-version="true"></script>
+}

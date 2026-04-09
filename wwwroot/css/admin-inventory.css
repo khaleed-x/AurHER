@@ -1,0 +1,385 @@
+
+
+/* ── Page Actions ── */
+.page-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* ── Summary Cards ── */
+.inventory-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.summary-card.all::before { background: var(--primary); }
+.summary-card.low::before { background: var(--warning); }
+.summary-card.out::before { background: var(--danger); }
+
+.summary-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.summary-card.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.summary-card.active.low { border-color: var(--warning); background: var(--warning-bg); }
+.summary-card.active.out { border-color: var(--danger); background: var(--danger-bg); }
+
+.summary-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summary-icon.all { background: var(--primary-light); color: var(--primary); }
+.summary-icon.low { background: var(--warning-bg); color: var(--warning); }
+.summary-icon.out { background: var(--danger-bg); color: var(--danger); }
+
+.summary-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.summary-info { flex: 1; }
+
+.summary-count {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.summary-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ── Filter Tabs ── */
+.filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+}
+
+.filter-tab:hover {
+    background: var(--primary-glow);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.filter-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.filter-tab.active.low {
+    background: var(--warning);
+    border-color: var(--warning);
+}
+
+.filter-tab.active.out {
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+.filter-tab-count {
+    background: rgba(255,255,255,0.3);
+    padding: 1px 6px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+}
+
+.filter-tab:not(.active) .filter-tab-count {
+    background: var(--border-light);
+    color: var(--text-muted);
+}
+
+/* ── Search Box ── */
+.inventory-search {
+    position: relative;
+    max-width: 300px;
+    margin-bottom: 20px;
+}
+
+.inventory-search input {
+    width: 100%;
+    height: 40px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 0 16px 0 40px;
+    font-size: 0.82rem;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    outline: none;
+    transition: var(--transition);
+}
+
+.inventory-search input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.inventory-search input::placeholder { color: var(--text-muted); }
+
+.inventory-search svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    pointer-events: none;
+}
+
+/* ── Table Card ── */
+.table-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.table-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.table-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 12px 24px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-2);
+}
+
+.data-table td {
+    padding: 14px 24px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface-2); }
+
+/* ── Stock Badge ── */
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.stock-badge.in-stock { background: var(--success-bg); color: var(--success); }
+.stock-badge.low-stock { background: var(--warning-bg); color: var(--warning); }
+.stock-badge.out-of-stock { background: var(--danger-bg); color: var(--danger); }
+
+.stock-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ── SKU Code ── */
+.sku-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-glow);
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+/* ── Product Info ── */
+.product-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.product-category {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.variant-info {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+/* ── Action Button ── */
+.btn-edit-variant {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    border: 1px solid var(--border-light);
+}
+
+.btn-edit-variant:hover {
+    background: var(--primary-glow);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-edit-variant svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+/* ── Empty State ── */
+.empty-state {
+    text-align: center;
+    padding: 60px 24px;
+}
+
+.empty-icon {
+    width: 48px;
+    height: 48px;
+    stroke: var(--border);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    margin: 0 auto 16px;
+    display: block;
+}
+
+.empty-title { font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.empty-subtitle { font-size: 0.82rem; color: var(--text-muted); }
+
+/* ── Stock quantity number ── */
+.stock-number {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.stock-number.danger { color: var(--danger); }
+.stock-number.warning { color: var(--warning); }
+.stock-number.success { color: var(--success); }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .inventory-summary { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .inventory-summary { grid-template-columns: 1fr; }
+    .page-actions { flex-direction: column; align-items: flex-start; }
+    .filter-tabs { flex-wrap: wrap; }
+}

@@ -1,0 +1,151 @@
+@model List<AurHER.DTOs.Store.HomeCategoryDto>
+@{
+    ViewData["Title"] = "Categories";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-home.css" asp-append-version="true" />
+    <style>
+        .page-hero {
+            background: var(--text-primary);
+            padding: 56px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(201,168,76,0.12), transparent 70%);
+        }
+        .page-hero-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+        .page-hero-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: white; letter-spacing: -0.03em; margin-bottom: 10px; }
+        .page-hero-sub { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
+
+        .categories-page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .category-page-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            padding: 32px 24px;
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .category-page-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .category-page-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .category-page-card:hover .category-page-icon {
+            background: var(--primary);
+        }
+
+        .category-page-icon svg {
+            width: 26px;
+            height: 26px;
+            stroke: var(--primary);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            transition: var(--transition);
+        }
+
+        .category-page-card:hover .category-page-icon svg { stroke: white; }
+
+        .category-page-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .category-page-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+
+        .category-page-count {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+    </style>
+}
+
+<!-- Hero -->
+<div class="page-hero">
+    <div class="page-hero-inner">
+        <div class="section-tag" style="color:var(--gold);margin-bottom:10px;">Browse</div>
+        <h1 class="page-hero-title">Shop by Category</h1>
+        <p class="page-hero-sub">Find exactly what you're looking for</p>
+    </div>
+</div>
+
+<!-- Categories -->
+<div style="max-width:1280px;margin:0 auto;padding:48px 32px;">
+
+    @if (Model.Any())
+    {
+        <div class="categories-page-grid">
+            @foreach (var category in Model)
+            {
+                <a href="/Shop/Index?category=@Uri.EscapeDataString(category.Name)"
+                   class="category-page-card reveal">
+                    <div class="category-page-icon">
+                        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    </div>
+                    <div>
+                        <div class="category-page-name">@category.Name</div>
+                        @if (!string.IsNullOrEmpty(category.Description))
+                        {
+                            <div class="category-page-desc">@category.Description</div>
+                        }
+                        <div class="category-page-count">
+                            @category.ProductCount item@(category.ProductCount != 1 ? "s" : "")
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-store">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+            <p>No categories available yet — check back soon!</p>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script src="~/js/store-home.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,222 @@
+@model AurHER.DTOs.Store.CheckoutSummaryDto
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-checkout.css" asp-append-version="true" />
+}
+
+
+<div class="checkout-header">
+    <div class="checkout-header-inner">
+        <h1 class="checkout-title">Checkout</h1>
+        <p class="checkout-subtitle">Complete your order details below</p>
+        <div class="checkout-steps">
+            <div class="step done">
+                <div class="step-num">✓</div>
+                Cart
+            </div>
+            <div class="step-sep"></div>
+            <div class="step active">
+                <div class="step-num">2</div>
+                Details
+            </div>
+            <div class="step-sep"></div>
+            <div class="step">
+                <div class="step-num">3</div>
+                Payment
+            </div>
+            <div class="step-sep"></div>
+            <div class="step">
+                <div class="step-num">4</div>
+                Confirmation
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="checkout-layout">
+
+
+    <div class="checkout-form-card">
+
+        <form method="post" asp-controller="Checkout" asp-action="PlaceOrder"  id="checkoutMainForm">
+            @Html.AntiForgeryToken()
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert-error">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                
+                <div style="background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;font-size:0.875rem;font-weight:500;">
+                    <strong></strong>
+                    <div class="alert-error">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+                   Pls Input all fields
+                </div>
+                </div>
+            }
+
+          
+            <div class="checkout-form-section">
+                <div class="checkout-section-title">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Contact Information
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Form.CustomerName">
+                            Full Name <span>*</span>
+                        </label>
+                        <input type="text"
+                               asp-for="Form.CustomerName"
+                               class="form-input"
+                               placeholder="e.g. Khalid Oyekunle" />
+                        <span asp-validation-for="Form.CustomerName" class="field-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Form.Phone">
+                            Phone Number <span>*</span>
+                        </label>
+                        <input type="tel"
+                               asp-for="Form.Phone"
+                               class="form-input"
+                               placeholder="e.g. 08012345678" />
+                        <span asp-validation-for="Form.Phone" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Form.Email">
+                        Email Address <span>*</span>
+                    </label>
+                    <input type="email"
+                           asp-for="Form.Email"
+                           class="form-input"
+                           placeholder="e.g. khalid@gmail.com" />
+                    <span asp-validation-for="Form.Email" class="field-error"></span>
+                </div>
+            </div>
+
+           
+            <div class="checkout-form-section">
+                <div class="checkout-section-title">
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Shipping Address
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Delivery Location <span>*</span></label>
+                    <select asp-for="Form.DeliveryLocation" class="form-input" id="deliveryState">
+                        <option value="">Select your Location</option>
+                            @if (Model.DeliveryLocations != null && Model.DeliveryLocations.Any())
+                            {
+                                @foreach (var location in Model.DeliveryLocations)
+                                {
+                                    <option value="@location.Name" data-fee="@location.Fee">
+                                        @location.Name - ₦@location.Fee.ToString("N0")
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                
+                                 <div class="alert alert-warning">
+                                No delivery locations available. Please contact support.  </div>
+                            <input type="hidden" asp-for="Form.DeliveryLocation" value="" />
+                            }
+                            
+                    </select>
+                    <span asp-validation-for="Form.DeliveryLocation" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Form.ShippingAddress">
+                         Address/Nearest Pickup Station <span>*</span>
+                    </label>
+                    <textarea asp-for="Form.ShippingAddress"
+                              class="form-textarea"
+                              placeholder=""></textarea>
+                    <span asp-validation-for="Form.ShippingAddress" class="field-error"></span>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="checkout-summary">
+        <div class="checkout-summary-header">
+            Order Summary (@Model.Cart.TotalItems item@(Model.Cart.TotalItems != 1 ? "s" : ""))
+        </div>
+
+        <div class="checkout-summary-items">
+            @foreach (var item in Model.Cart.Items)
+            {
+                <div class="checkout-summary-item">
+                    <div class="checkout-item-img">
+                        @if (!string.IsNullOrEmpty(item.PrimaryImage))
+                        {
+                            <img src="@item.PrimaryImage" alt="@item.ProductName" />
+                        }
+                    </div>
+                    <div class="checkout-item-info">
+                        <div class="checkout-item-name">@item.ProductName</div>
+                        <div class="checkout-item-variant">@item.Size · @item.Color</div>
+                        <div class="checkout-item-qty">Qty: @item.Quantity</div>
+                    </div>
+                    <div class="checkout-item-price">₦@item.Subtotal.ToString("N0")</div>
+                </div>
+            }
+        </div>
+
+        <div class="checkout-totals">
+            <div class="checkout-total-row">
+                <span class="checkout-total-label">Subtotal</span>
+                <span class="checkout-total-value">₦@Model.Cart.Subtotal.ToString("N0")</span>
+            </div>
+            <div class="checkout-total-row">
+                <span class="checkout-total-label">Delivery Fee</span>
+                <span class="checkout-total-value" id="deliveryFeeDisplay">₦0</span>
+            </div>
+            <div class="checkout-total-row grand">
+                <span class="checkout-total-label">Total</span>
+                <span class="checkout-total-value" id="totalDisplay">₦@Model.Cart.Subtotal.ToString("N0")</span>
+            </div>
+        </div>
+
+        <button type="submit"
+                form="checkoutMainForm"
+                class="btn-place-order">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Place Order
+        </button>
+
+        <div class="checkout-secure-note">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Secure checkout — your details are protected
+        </div>
+    </div>
+
+</div>
+@section Scripts {
+    <script>
+      document.getElementById('deliveryState').addEventListener('change', function() {
+    var selectedOption = this.options[this.selectedIndex];
+    var deliveryFee = selectedOption.getAttribute('data-fee') || 0;
+    deliveryFee = parseInt(deliveryFee);
+    
+    var subtotal = @Model.Cart.Subtotal;
+    var total = subtotal + deliveryFee;
+    
+    document.getElementById('deliveryFeeDisplay').textContent = '₦' + deliveryFee.toLocaleString();
+    document.getElementById('totalDisplay').textContent = '₦' + total.toLocaleString();
+});
+    </script>
+}

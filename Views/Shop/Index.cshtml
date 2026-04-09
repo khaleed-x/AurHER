@@ -1,0 +1,204 @@
+@model IEnumerable<AurHER.DTOs.Store.HomeProductDto>
+@{
+    ViewData["Title"] = "Shop";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var category = ViewBag.Category as string;
+    var search = ViewBag.Search as string;
+    var sort = ViewBag.Sort as string;
+    var productCount = Model.Count();
+
+    var hasFilters = !string.IsNullOrEmpty(category) || !string.IsNullOrEmpty(search);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-shop.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="shop-header">
+    <div class="shop-header-inner">
+        <h1 class="shop-title">
+            @if (!string.IsNullOrEmpty(category))
+            {
+                @category
+            }
+            else if (!string.IsNullOrEmpty(search))
+            {
+                <text>Search Results</text>
+            }
+            else
+            {
+                <text>All Products</text>
+            }
+        </h1>
+        <p class="shop-subtitle">
+            <span>@productCount</span> product@(productCount != 1 ? "s" : "") found
+            @if (!string.IsNullOrEmpty(search))
+            {
+                <text> for "@search"</text>
+            }
+        </p>
+    </div>
+</div>
+
+<!-- ── Shop Layout ── -->
+<div class="shop-layout">
+
+    <!-- ── Filters Sidebar ── -->
+    <aside class="filters-sidebar" id="filtersSidebar">
+
+        <div class="filters-title">
+            Filters
+            @if (hasFilters)
+            {
+                <a href="/Shop/Index" class="filters-clear">Clear all</a>
+            }
+            <button id="filterClose"
+                    style="display:none;background:none;border:none;cursor:pointer;color:var(--text-muted);">
+                <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Search -->
+        <div class="filter-group">
+            <div class="filter-group-label">Search</div>
+            <div class="filter-search">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text"
+                       id="shopSearch"
+                       placeholder="Search products..."
+                       value="@search" />
+            </div>
+        </div>
+
+        <!-- Sort -->
+
+        <div class="filter-group">
+            <div class="filter-group-label">Sort By</div>
+
+            <select class="filter-sort" id="sortSelect">
+                <option value="" selected="@(string.IsNullOrEmpty(sort))">Latest</option>
+                <option value="price-asc" selected="@(string.Equals(sort, "price-asc"))">Price: Low to High</option>
+                <option value="price-desc" selected="@(string.Equals(sort, "price-desc"))">Price: High to Low</option>
+                <option value="newest" selected="@(string.Equals(sort, "newest"))">Newest First</option>
+            </select>
+        </div>
+
+    </aside>
+
+    <!-- ── Products Main ── -->
+    <div class="shop-main">
+
+        <!-- Toolbar -->
+        <div class="shop-toolbar">
+            <button class="mobile-filter-btn" id="mobileFilterBtn">
+                <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+                Filters
+            </button>
+            <span class="shop-result-count">
+                Showing <span>@productCount</span> product@(productCount != 1 ? "s" : "")
+            </span>
+        </div>
+
+        <!-- Active Filters -->
+        @if (hasFilters)
+        {
+            <div class="active-filters">
+                @if (!string.IsNullOrEmpty(category))
+                {
+                    <a href="/Shop/Index@(!string.IsNullOrEmpty(search) ? $"?search={search}" : "")"
+                       class="active-filter-tag">
+                        @category
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </a>
+                }
+                @if (!string.IsNullOrEmpty(search))
+                {
+                    <a href="/Shop/Index@(!string.IsNullOrEmpty(category) ? $"?category={Uri.EscapeDataString(category)}" : "")"
+                       class="active-filter-tag">
+                        "@search"
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </a>
+                }
+            </div>
+        }
+
+        <!-- Products Grid -->
+        @if (Model.Any())
+        {
+            <div class="products-grid">
+                @foreach (var product in Model)
+                {
+                    <a href="/Shop/Details/@product.Id" class="product-card">
+                        <div class="product-card-image">
+                            @if (!string.IsNullOrEmpty(product.PrimaryImage))
+                            {
+                                <img src="@product.PrimaryImage" alt="@product.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="product-card-placeholder">
+                                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                                </div>
+                            }
+                        </div>
+                        <div class="product-card-body">
+                            @if (!string.IsNullOrEmpty(product.CategoryName))
+                            {
+                                <div class="product-card-category">@product.CategoryName</div>
+                            }
+                            <div class="product-card-name">@product.Name</div>
+                            <div class="product-card-price">
+                                @if (product.LowestPrice.HasValue)
+                                {
+                                    if (product.LowestPrice == product.HighestPrice)
+                                    {
+                                        <span>₦@product.LowestPrice.Value.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="from">from</span>
+                                        <span>₦@product.LowestPrice.Value.ToString("N0")</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="no-price">See details</span>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-shop">
+                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <div class="empty-shop-title">No products found</div>
+                <div class="empty-shop-text">
+                    @if (hasFilters)
+                    {
+                        <text>Try adjusting your filters or search term</text>
+                    }
+                    else
+                    {
+                        <text>No products available yet — check back soon!</text>
+                    }
+                </div>
+                @if (hasFilters)
+                {
+                    <a href="/Shop/Index" class="btn-clear-filters">Clear Filters</a>
+                }
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/store-shop.js" asp-append-version="true"></script>
+}

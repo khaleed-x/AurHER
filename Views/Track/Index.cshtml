@@ -1,0 +1,178 @@
+@model AurHER.DTOs.Store.OrderTrackingDto?
+@{
+    ViewData["Title"] = "Track Order";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var error = ViewBag.Error as string;
+    var searchCode = ViewBag.Code as string;
+
+    // Status steps helper
+    int statusIndex = Model != null ? (int)Model.Status : -1;
+    bool isCancelled = Model?.Status == AurHER.Models.Enums.OrderStatus.Cancelled;
+
+    string StepClass(int step) {
+        if (isCancelled) return step == 0 ? "done" : step == 4 ? "cancelled" : "";
+        if (step < statusIndex) return "done";
+        if (step == statusIndex) return "active";
+        return "";
+    }
+
+    bool ConnectorDone(int step) => !isCancelled && step < statusIndex;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-tracking.css" asp-append-version="true" />
+}
+
+<!-- ── Page Header ── -->
+<div class="track-header">
+    <div class="track-header-inner">
+        <h1 class="track-title">Track Your Order</h1>
+        <p class="track-subtitle">Enter your confirmation code to see your order status</p>
+
+        <form action="/Track/Index" method="get" class="track-search-form">
+            <input type="text"
+                   name="code"
+                   class="track-search-input"
+                   placeholder="Enter confirmation code e.g. A3F9B2C1"
+                   value="@(Model?.ConfirmationCode ?? searchCode)"
+                   maxlength="8" />
+            <button type="submit" class="btn-track-search">Track Order</button>
+        </form>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="track-error">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                @error
+            </div>
+        }
+    </div>
+</div>
+
+<!-- ── Order Result ── -->
+@if (Model != null)
+{
+    <div class="track-result">
+
+        <!-- Order Header -->
+        <div class="order-header-card">
+            <div>
+                <div class="order-code-display">@Model.ConfirmationCode</div>
+                <div class="order-customer">@Model.CustomerName</div>
+                <div class="order-date">Placed on @Model.CreatedAt.ToString("MMMM dd, yyyy")</div>
+            </div>
+            <div class="order-total-display">
+                <div class="order-total-label">Order Total</div>
+                <div class="order-total-amount">₦@Model.TotalAmount.ToString("N0")</div>
+            </div>
+        </div>
+
+        <!-- Status Timeline -->
+        <div class="status-card">
+            <div class="status-card-title">Order Status</div>
+
+            @if (!isCancelled)
+            {
+                <div class="status-timeline">
+                    <!-- Pending -->
+                    <div class="status-step @StepClass(0)">
+                        <div class="status-step-circle">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="status-step-label">Pending</div>
+                    </div>
+
+                    <div class="status-connector @(ConnectorDone(0) ? "done" : "")"></div>
+
+                    <!-- Processing -->
+                    <div class="status-step @StepClass(1)">
+                        <div class="status-step-circle">
+                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div class="status-step-label">Processing</div>
+                    </div>
+
+                    <div class="status-connector @(ConnectorDone(1) ? "done" : "")"></div>
+
+                    <!-- Shipped -->
+                    <div class="status-step @StepClass(2)">
+                        <div class="status-step-circle">
+                            <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        </div>
+                        <div class="status-step-label">Shipped</div>
+                    </div>
+
+                    <div class="status-connector @(ConnectorDone(2) ? "done" : "")"></div>
+
+                    <!-- Delivered -->
+                    <div class="status-step @StepClass(3)">
+                        <div class="status-step-circle">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="status-step-label">Delivered</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="status-timeline">
+                    <div class="status-step done">
+                        <div class="status-step-circle">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="status-step-label">Placed</div>
+                    </div>
+                    <div class="status-connector"></div>
+                    <div class="status-step cancelled">
+                        <div class="status-step-circle">
+                            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </div>
+                        <div class="status-step-label">Cancelled</div>
+                    </div>
+                </div>
+            }
+
+            <!-- Payment Status -->
+            <div class="payment-status-row">
+                <span class="payment-status-label">Payment Status</span>
+                <span class="payment-badge @Model.PaymentStatus.ToString().ToLower()">
+                    @Model.PaymentStatus
+                </span>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="items-card">
+            <div class="items-card-header">
+                Items Ordered (@Model.Items.Count)
+            </div>
+            @foreach (var item in Model.Items)
+            {
+                <div class="track-order-item">
+                    <div class="track-item-img">
+                        @if (!string.IsNullOrEmpty(item.PrimaryImage))
+                        {
+                            <img src="@item.PrimaryImage" alt="@item.ProductName" />
+                        }
+                    </div>
+                    <div class="track-item-info">
+                        <div class="track-item-name">@item.ProductName</div>
+                        <div class="track-item-variant">@item.Size · @item.Color</div>
+                        <div class="track-item-qty">Qty: @item.Quantity</div>
+                    </div>
+                    <div class="track-item-price">₦@((item.Price * item.Quantity).ToString("N0"))</div>
+                </div>
+            }
+        </div>
+
+        <!-- Actions -->
+        <div class="track-actions">
+            <a href="/Track/Index" class="btn-track-again">Track Another Order</a>
+            <a href="/Shop/Index" class="btn-start-shopping" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--primary);color:white;border-radius:999px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:var(--transition);">
+                Continue Shopping
+            </a>
+        </div>
+
+    </div>
+}

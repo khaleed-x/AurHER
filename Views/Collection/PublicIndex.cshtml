@@ -1,0 +1,118 @@
+@model List<AurHER.DTOs.Store.HomeCollectionDto>
+@{
+    ViewData["Title"] = "Collections";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-home.css" asp-append-version="true" />
+    <style>
+        .page-hero {
+            background: var(--text-primary);
+            padding: 56px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200,20,90,0.15), transparent 70%);
+        }
+        .page-hero-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+        .page-hero-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: white; letter-spacing: -0.03em; margin-bottom: 10px; }
+        .page-hero-sub { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
+    </style>
+}
+
+<!-- Hero -->
+<div class="page-hero">
+    <div class="page-hero-inner">
+        <div class="section-tag" style="color:var(--gold);margin-bottom:10px;">Curated For You</div>
+        <h1 class="page-hero-title">Our Collections</h1>
+        <p class="page-hero-sub">Handpicked styles grouped to inspire your next look</p>
+    </div>
+</div>
+
+<!-- Collections -->
+<div style="max-width:1280px;margin:0 auto;padding:48px 32px;">
+
+ <!-- ── Collections ── -->
+@if (Model.Any())
+{
+    <section class="section">
+            @foreach (var collection in Model)
+            {
+                <div class="collection-block reveal">
+                    <div class="collection-header">
+                        <div class="collection-name">
+                            <span>@collection.Name</span>
+                        </div>
+                        <a href="/Shop/Index" class="collection-link">
+                            View all
+                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+
+                    @if (collection.Products.Any())
+                    {
+                        <div class="products-grid">
+                            @foreach (var product in collection.Products)
+                            {
+                                <a href="/Shop/Details/@product.Id" class="product-card">
+                                    <div class="product-card-image">
+                                        @if (!string.IsNullOrEmpty(product.PrimaryImage))
+                                        {
+                                            <img src="@product.PrimaryImage" alt="@product.Name" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <div class="product-card-placeholder">
+                                                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="product-card-body">
+                                        <div class="product-card-name">@product.Name</div>
+                                        <div class="product-card-price">
+                                            @if (product.LowestPrice.HasValue)
+                                            {
+                                                <span class="from">from</span>
+                                                <span>₦@product.LowestPrice.Value.ToString("N0")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="no-price">See details</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+    </section>
+}
+
+<!-- ── Empty Store ── -->
+@if (!Model.Any())
+{
+    <section class="section">
+        <div class="section-inner">
+            <div class="empty-store">
+                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <p>Store coming soon — check back later!</p>
+            </div>
+        </div>
+    </section>
+}
+
+</div>
+
+@section Scripts {
+    <script src="~/js/store-home.js" asp-append-version="true"></script>
+}

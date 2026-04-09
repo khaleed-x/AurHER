@@ -1,0 +1,199 @@
+@model AurHER.DTOs.Admin.OrderDetailDto
+@using AurHER.Models.Enums
+
+@{
+    ViewData["Title"] = $"Order #{Model.ConfirmationCode}";
+    
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-orders.css" />
+}
+
+<div class="order-detail-container">
+    <div class="order-detail-header">
+    <div class="page-actions animate-in">
+                <a href="@Url.Action("Index")" class="order-back-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    Back to Orders
+                </a>
+                
+        @if (TempData["Success"] != null)
+        {
+            <div class="orders-alert orders-alert-success">
+                <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="orders-alert orders-alert-error">
+                <svg viewBox="0 0 24 24" width="18" height="18"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                @TempData["Error"]
+            </div>
+        }
+                <h1 class="order-detail-title">Order #@Model.ConfirmationCode</h1>
+                <p class="order-detail-subtitle">Placed on @Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</p>
+            </div>
+
+            <div class="order-summary-grid animate-in delay-1">
+                <!-- Order Info Card -->
+                <div class="order-info-card">
+                    <h3 class="order-info-title">Order Information</h3>
+                    <div class="order-info-content">
+                        <div class="order-info-row">
+                            <span class="order-info-label">Order ID:</span>
+                            <span>#@Model.Id</span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="order-info-label">Confirmation Code:</span>
+                            <span class="order-code">@Model.ConfirmationCode</span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="order-info-label">Status:</span>
+                            <span class="order-status-badge order-status-@Model.Status.ToString().ToLower()">@Model.Status</span>
+                        </div>
+
+
+                         <div class="order-info-row">
+                            <span class="order-info-label">DeliveryFee:</span>
+                            <span class="order-status-badge order-status-">₦@Model.DeliveryFee.ToString("N0")</span>
+                        </div>
+
+                        <div class="order-info-row">
+                            <span class="order-info-label">TotalAmount:</span>
+                            <span class="order-status-badge order-status-">₦@Model.TotalAmount.ToString("N0")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Info Card -->
+                <div class="order-info-card animate-in delay-2">
+                    <h3 class="order-info-title">Customer Information</h3>
+                    <div class="order-info-content">
+                        <div class="order-info-row">
+                            <span class="order-info-label">Name:</span>
+                            <span>@Model.CustomerName</span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="order-info-label">Email:</span>
+                            <span>@Model.Email</span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="order-info-label">Phone:</span>
+                            <span>@Model.Phone</span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="order-info-label">Shipping Address:</span>
+                            <span>@Model.ShippingAddress</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Info Card -->
+                <div class="order-info-card animate-in delay-3">
+                    <h3 class="order-info-title">Payment Information</h3>
+                    <div class="order-info-content">
+                        @if (Model.Payment != null)
+                        {
+                            <div class="order-info-row">
+                                <span class="order-info-label">Status:</span>
+                                <span class="order-payment-badge order-payment-@Model.Payment.Status.ToString().ToLower()">@Model.Payment.Status</span>
+                            </div>
+                            <div class="order-info-row">
+                                <span class="order-info-label">Amount:</span>
+                                <span>₦@Model.Payment.Amount.ToString("N0")</span>
+                            </div>
+                            <div class="order-info-row">
+                                <span class="order-info-label">Method:</span>
+                                <span>@Model.Payment.PaymentMethod</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Payment.TransactionReference))
+                            {
+                                <div class="order-info-row">
+                                    <span class="order-info-label">Transaction Ref:</span>
+                                    <span>@Model.Payment.TransactionReference</span>
+                                </div>
+                            }
+                            @if (Model.Payment.PaidAt.HasValue)
+                            {
+                                <div class="order-info-row">
+                                    <span class="order-info-label">Paid At:</span>
+                                    <span>@Model.Payment.PaidAt.Value.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="order-info-empty">Payment not initiated</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items Table -->
+            <div class="order-items-card animate-in delay-4">
+                <h3 class="order-items-title">Order Items</h3>
+                <div class="order-items-table-wrapper">
+                    <table class="order-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Variant</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="order-product-cell">
+                                        @if (!string.IsNullOrEmpty(item.ProductImage))
+                                        {
+                                            <img src="@item.ProductImage" alt="@item.ProductName" class="order-product-thumb" />
+                                        }
+                                        <span>@item.ProductName</span>
+                                    </td>
+                                    <td>@item.Variant</td>
+                                    <td>@item.Quantity</td>
+                                    <td>₦@item.Price.ToString("N0")</td>
+                                    <td class="order-item-subtotal">₦@item.Subtotal.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="order-total-row">
+                                <td colspan="4" class="order-total-label">Total</td>
+                                <td class="order-grand-total">₦@Model.TotalAmount.ToString("N0")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Update Status Form -->
+            <div class="order-status-card animate-in delay-5">
+                <h3 class="order-status-title">Update Order Status</h3>
+                <form asp-action="UpdateStatus" asp-controller="Order" method="post" class="order-status-form" id="update">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <select name="status" class="order-status-select">
+                        <option value="Pending" selected="@(Model.Status == OrderStatus.Pending)">Pending</option>
+                        <option value="Processing" selected="@(Model.Status == OrderStatus.Processing)">Processing</option>
+                        <option value="Shipped" selected="@(Model.Status == OrderStatus.Shipped)">Shipped</option>
+                        <option value="Delivered" selected="@(Model.Status == OrderStatus.Delivered)">Delivered</option>
+                        <option value="Cancelled" selected="@(Model.Status == OrderStatus.Cancelled)">Cancelled</option>
+                    </select>
+                    <button type="submit" class="order-btn-update">Update Status</button>
+                </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-orders.js"></script>
+}

@@ -1,0 +1,239 @@
+@model AurHER.DTOs.Store.HomeProductDetailDto
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var colors = Model.Variants.Select(v => v.Color).Distinct().ToList();
+    var sizes = Model.Variants.Select(v => v.Size).Distinct().ToList();
+    var primaryImage = Model.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                    ?? Model.Images.FirstOrDefault()?.ImageUrl;
+    var lowestPrice = Model.Variants.Any() ? Model.Variants.Min(v => v.Price) : (decimal?)null;
+    var highestPrice = Model.Variants.Any() ? Model.Variants.Max(v => v.Price) : (decimal?)null;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-product-detail.css" asp-append-version="true" />
+}
+
+<!-- ── Breadcrumb ── -->
+<div class="breadcrumb">
+    <div class="breadcrumb-inner">
+        <a href="/" class="breadcrumb-link">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="/Shop/Index" class="breadcrumb-link">Shop</a>
+        @if (!string.IsNullOrEmpty(Model.CategoryName))
+        {
+            <span class="breadcrumb-sep">›</span>
+            <a href="/Shop/Index?category=@Uri.EscapeDataString(Model.CategoryName)"
+               class="breadcrumb-link">@Model.CategoryName</a>
+        }
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">@Model.Name</span>
+    </div>
+</div>
+
+<!-- ── Product Layout ── -->
+<div class="product-detail-layout">
+
+    <!-- ── Image Gallery ── -->
+    <div class="product-gallery">
+        <div class="gallery-main">
+            @if (!string.IsNullOrEmpty(primaryImage))
+            {
+                <img src="@primaryImage" alt="@Model.Name" id="mainImage" />
+            }
+            else
+            {
+                <div class="gallery-main-placeholder">
+                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                </div>
+            }
+        </div>
+
+        @if (Model.Images.Count > 1)
+        {
+            <div class="gallery-thumbs">
+                @foreach (var image in Model.Images)
+                {
+                    <div class="gallery-thumb @(image.IsPrimary ? "active" : "")"
+                         data-src="@image.ImageUrl">
+                        <img src="@image.ImageUrl" alt="@Model.Name" loading="lazy" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- ── Product Info ── -->
+    <div class="product-info">
+
+        @if (!string.IsNullOrEmpty(Model.CategoryName))
+        {
+            <div class="product-category-tag">@Model.CategoryName</div>
+        }
+
+        <h1 class="product-title">@Model.Name</h1>
+
+        <!-- Price -->
+        <div class="product-price-display">
+            <div class="product-price-main" id="productPrice">
+                @if (lowestPrice.HasValue)
+                {
+                    <text>from ₦@lowestPrice.Value.ToString("N0")</text>
+                }
+                else
+                {
+                    <text>—</text>
+                }
+            </div>
+            @if (lowestPrice.HasValue && highestPrice.HasValue && lowestPrice != highestPrice)
+            {
+                <div class="product-price-range">
+                    Price varies by size and color
+                    (₦@lowestPrice.Value.ToString("N0") — ₦@highestPrice.Value.ToString("N0"))
+                </div>
+            }
+        </div>
+
+        <hr class="product-divider" />
+
+        <p class="product-description">@Model.Description</p>
+
+        @if (Model.Variants.Any())
+        {
+            <form id="addToCartForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="hidden" name="variantId" id="selectedVariantId" value="" />
+                <input type="hidden" name="quantity" id="quantityHidden" value="1" />
+
+                <!-- Color -->
+                @if (colors.Any())
+                {
+                    <div class="variant-section">
+                        <div class="variant-label">
+                            Color:
+                            <span class="variant-selected" id="selectedColorLabel">—</span>
+                        </div>
+                        <div class="color-options">
+                            @foreach (var color in colors)
+                            {
+                                var cssColor = color.ToLower() switch
+                                {
+                                    "black" => "#0F172A",
+                                    "white" => "#F8FAFC",
+                                    "red" => "#EF4444",
+                                    "pink" => "#EC4899",
+                                    "hot pink" => "#F72585",
+                                    "navy blue" => "#1E3A5F",
+                                    "royal blue" => "#2563EB",
+                                    "burgundy" => "#7C0A2B",
+                                    "emerald green" => "#059669",
+                                    "nude" => "#D4A574",
+                                    "cream" => "#FFF8E7",
+                                    "gold" => "#C9A84C",
+                                    "silver" => "#94A3B8",
+                                    "grey" => "#64748B",
+                                    "brown" => "#92400E",
+                                    "orange" => "#F97316",
+                                    "purple" => "#7C3AED",
+                                    "yellow" => "#EAB308",
+                                    _ => "#94A3B8"
+                                };
+                                <button type="button"
+                                        class="color-swatch"
+                                        data-color="@color"
+                                        title="@color"
+                                        style="background-color: @cssColor; @(color.ToLower() == "white" || color.ToLower() == "cream" ? "border: 1.5px solid #E2E8F0;" : "")">
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Size -->
+                @if (sizes.Any())
+                {
+                    <div class="variant-section">
+                        <div class="variant-label">
+                            Size:
+                            <span class="variant-selected" id="selectedSizeLabel">—</span>
+                        </div>
+                        <div class="size-options">
+                            @foreach (var size in sizes)
+                            {
+                                <button type="button"
+                                        class="size-btn"
+                                        data-size="@size">
+                                    @size
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Quantity -->
+                <div class="variant-section">
+                    <div class="variant-label">Quantity</div>
+                    <div class="quantity-selector">
+                        <button type="button" class="qty-btn" id="qtyMinus">−</button>
+                        <input type="number"
+                               class="qty-input"
+                               id="quantityDisplay"
+                               value="1"
+                               min="1"
+                               max="100"
+                               readonly />
+                        <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                    </div>
+                </div>
+
+                <!-- Stock Info -->
+                <div class="stock-info" id="stockInfo"></div>
+
+                <!-- Add to Cart -->
+                <div class="add-to-cart-section">
+                    <button type="submit"
+                            class="btn-add-cart"
+                            id="addToCartBtn"
+                            disabled>
+                        Select Size &amp; Color
+                    </button>
+                </div>
+
+                <!-- Alert -->
+                <div class="cart-alert" id="cartAlert">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span></span>
+                </div>
+
+            </form>
+        }
+        else
+        {
+            <p style="color:var(--text-muted);font-size:0.875rem;">
+                No variants available for this product yet.
+            </p>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Pass variant data to JavaScript -->
+    <script>
+        window.productVariants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.Variants.Select(v => new {
+                id = v.Id,
+                size = v.Size,
+                color = v.Color,
+                price = v.Price,
+                stock = v.StockQuantity,
+                 reservedStock = v.ReservedStock,
+                 availableStock = v.AvailableStock,
+                sku = v.SKU
+            })
+        ));
+    </script>
+    <script src="~/js/store-product-detail.js" asp-append-version="true"></script>
+}

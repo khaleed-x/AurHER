@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Order Placed!";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var code = ViewBag.ConfirmationCode as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/store-checkout.css" asp-append-version="true" />
+}
+
+<div class="success-page">
+
+    <!-- Success Icon -->
+    <div class="success-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+
+    <h1 class="success-title">Order Placed! 🎉</h1>
+    <p class="success-subtitle">
+        Thank you for shopping with AurHER! Your order has been received
+        and we'll start processing it right away.
+    </p>
+
+    <!-- Confirmation Code -->
+    <div class="success-code-card">
+        <div class="success-code-label">Your Confirmation Code</div>
+        <div class="success-code">@code</div>
+        <div class="success-code-note">
+            Save this code — you'll need it to track your order.<br/>
+            A confirmation email has been sent to you.
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="success-actions">
+        <a href="/Track/Index?code=@code" class="btn-track-order">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Track My Order
+        </a>
+        <a href="/Shop/Index" class="btn-continue-shopping-success">
+            Continue Shopping
+        </a>
+    </div>
+
+</div>

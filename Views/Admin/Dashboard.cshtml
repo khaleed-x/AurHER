@@ -1,0 +1,331 @@
+﻿@model AurHER.DTOs.Admin.AdminDashboardDto
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+
+  
+
+    // Monthly chart data (last 6 months labels)
+    var months = new[] { "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" };
+    // These would ideally come from service — using TotalRevenue as placeholder for now
+    var revenueData = new[] { 0, 0, 0, 0, 0, (double)Model.TotalRevenue };
+    var ordersData  = new[] { 0, 0, 0, 0, 0, (double)Model.TotalOrders };
+
+    // Daily orders (last 7 days labels)
+    var days = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+    var dailyOrders = new[] { 0, 0, 0, 0, 0, 0, Model.NewOrdersToday };
+}
+
+<!-- ── Page Header ── -->
+<div class="page-header animate-in">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Welcome back — here's what's happening with your store today.</p>
+</div>
+
+<!-- ── Stats Grid ── -->
+<div class="stats-grid">
+
+    <div class="stat-card accent-blue animate-in delay-1">
+        <div class="stat-header">
+            <div class="stat-icon blue">
+                <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <span class="stat-trend neutral">All time</span>
+        </div>
+        <div class="stat-value"
+             data-counter="@Model.TotalRevenue"
+             data-prefix="₦">₦0</div>
+        <div class="stat-label">Total Revenue</div>
+    </div>
+
+    <div class="stat-card accent-green animate-in delay-2">
+        <div class="stat-header">
+            <div class="stat-icon green">
+                <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <span class="stat-trend up">↑ Today</span>
+        </div>
+        <div class="stat-value"
+             data-counter="@Model.RevenueToday"
+             data-prefix="₦">₦0</div>
+        <div class="stat-label">Revenue Today</div>
+    </div>
+
+    <div class="stat-card accent-blue animate-in delay-3">
+        <div class="stat-header">
+            <div class="stat-icon blue">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+            </div>
+            <span class="stat-trend neutral">All time</span>
+        </div>
+        <div class="stat-value"
+             data-counter="@Model.TotalOrders">0</div>
+        <div class="stat-label">Total Orders</div>
+    </div>
+
+    <div class="stat-card accent-amber animate-in delay-4">
+        <div class="stat-header">
+            <div class="stat-icon amber">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+            </div>
+            <span class="stat-trend up">↑ Today</span>
+        </div>
+        <div class="stat-value"
+             data-counter="@Model.NewOrdersToday">0</div>
+        <div class="stat-label">New Orders Today</div>
+    </div>
+
+</div>
+
+<!-- ── Charts Row ── -->
+<div class="charts-row animate-in delay-2">
+
+    <!-- Revenue Line Chart -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Revenue Overview</div>
+                <div class="card-subtitle">Last 6 months — revenue vs orders</div>
+            </div>
+            <div class="card-actions">
+                <button class="card-action-btn" title="Refresh">
+                    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="revenueChart"
+                        data-labels='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(months))'
+                        data-revenue='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(revenueData))'
+                        data-orders='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ordersData))'
+                        style="width:100%;height:100%;">
+                </canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Status Donut -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Order Status</div>
+                <div class="card-subtitle">Distribution by status</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height: 160px;">
+                <canvas id="orderDonut"
+                        data-pending="@Model.PendingOrders"
+                        data-processing="@Model.ProcessingOrders"
+                        data-shipped="@Model.ShippedOrders"
+                        data-delivered="@Model.DeliveredOrders"
+                        data-cancelled="@Model.CancelledOrders"
+                        style="width:100%;height:100%;">
+                </canvas>
+            </div>
+
+            <div class="status-grid" style="margin-top: 16px; margin-bottom: 0;">
+                <div class="status-pill pending">
+                    <span class="status-dot"></span>
+                    <div class="status-info">
+                        <div class="status-name">Pending</div>
+                        <div class="status-count">@Model.PendingOrders</div>
+                    </div>
+                </div>
+                <div class="status-pill processing">
+                    <span class="status-dot"></span>
+                    <div class="status-info">
+                        <div class="status-name">Processing</div>
+                        <div class="status-count">@Model.ProcessingOrders</div>
+                    </div>
+                </div>
+                <div class="status-pill shipped">
+                    <span class="status-dot"></span>
+                    <div class="status-info">
+                        <div class="status-name">Shipped</div>
+                        <div class="status-count">@Model.ShippedOrders</div>
+                    </div>
+                </div>
+                <div class="status-pill delivered">
+                    <span class="status-dot"></span>
+                    <div class="status-info">
+                        <div class="status-name">Delivered</div>
+                        <div class="status-count">@Model.DeliveredOrders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Catalogue Stats ── -->
+<div class="catalogue-row animate-in delay-3">
+
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background: var(--primary-light); color: var(--primary);">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        </div>
+        <div>
+            <div class="mini-stat-value" data-counter="@Model.TotalProducts">0</div>
+            <div class="mini-stat-label">Total Products</div>
+        </div>
+    </div>
+
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background: var(--success-bg); color: var(--success);">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+            <div class="mini-stat-value" data-counter="@Model.ActiveProducts">0</div>
+            <div class="mini-stat-label">Active Products</div>
+        </div>
+    </div>
+
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background: var(--surface-2); color: var(--text-muted);">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <div>
+            <div class="mini-stat-value" data-counter="@Model.InactiveProducts">0</div>
+            <div class="mini-stat-label">Inactive Products</div>
+        </div>
+    </div>
+
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background: var(--success-bg); color: var(--success);">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        </div>
+        <div>
+            <div class="mini-stat-value" data-counter="@Model.TotalCategories">0</div>
+            <div class="mini-stat-label">Categories</div>
+        </div>
+    </div>
+
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background: #EEF2FF; color: #6366F1;">
+            <svg viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        </div>
+        <div>
+            <div class="mini-stat-value" data-counter="@Model.TotalCollections">0</div>
+            <div class="mini-stat-label">Collections</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Bottom Row ── -->
+<div class="bottom-row animate-in delay-4">
+
+    <!-- Inventory Alerts -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Inventory Alerts</div>
+                <div class="card-subtitle">Stock levels requiring attention</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="inventory-list">
+
+                <div class="inventory-item">
+                    <div class="inventory-item-icon out">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <div class="inventory-item-info">
+                        <div class="inventory-item-name">Out of Stock Variants</div>
+                        <div class="inventory-item-detail">Variants with 0 units remaining</div>
+                    </div>
+                    <span class="inventory-item-badge badge-out">@Model.OutOfStockCount</span>
+                </div>
+
+                <div class="inventory-item">
+                    <div class="inventory-item-icon low">
+                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="inventory-item-info">
+                        <div class="inventory-item-name">Low Stock Variants</div>
+                        <div class="inventory-item-detail">Variants with 5 or fewer units</div>
+                    </div>
+                    <span class="inventory-item-badge badge-low">@Model.LowStockCount</span>
+                </div>
+
+                <div class="inventory-item">
+                    <div class="inventory-item-icon ok">
+                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="inventory-item-info">
+                        <div class="inventory-item-name">Total Products</div>
+                        <div class="inventory-item-detail">All active and inactive products</div>
+                    </div>
+                    <span class="inventory-item-badge badge-ok">@Model.TotalProducts</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Recent Orders</div>
+                <div class="card-subtitle">Last 10 orders placed</div>
+            </div>
+            <div class="card-actions">
+                <a href="/Order/Index" class="card-action-btn" title="View All">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+        <div class="card-body" style="padding-top: 12px;">
+            @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+            {
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Code</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.RecentOrders)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="order-customer">@order.CustomerName</div>
+                                    <div class="order-email">@order.Email</div>
+                                </td>
+                                <td>
+                                    <span class="order-code">@order.ConfirmationCode</span>
+                                </td>
+                                <td>
+                                    <span class="order-amount">₦@order.TotalAmount.ToString("N0")</span>
+                                </td>
+                                <td>
+                                    <span class="order-status status-@((int)order.Status)">
+                                        @order.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.875rem;">
+                    <svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:var(--border);fill:none;stroke-width:1.5;margin:0 auto 10px;display:block;stroke-linecap:round;">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                        <rect x="9" y="3" width="6" height="4" rx="2"/>
+                    </svg>
+                    No orders yet
+                </div>
+            }
+        </div>
+    </div>
+
+</div>

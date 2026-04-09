@@ -1,0 +1,101 @@
+@model AurHER.DTOs.Admin.UpdateCategoryDto
+@{
+    ViewData["Title"] = "Edit Category";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .form-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border-light); box-shadow: var(--shadow); overflow: hidden; max-width: 600px; }
+        .form-card-header { padding: 20px 24px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; }
+        .form-card-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+        .form-card-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
+        .form-card-body { padding: 28px 24px; }
+
+        .editing-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--gold-light); color: var(--gold); border: 1px solid rgba(201,168,76,0.2); }
+        .editing-badge svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+        .form-label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.02em; }
+        .form-label span { color: var(--danger); margin-left: 2px; }
+        .form-input, .form-textarea {
+            width: 100%; background: var(--surface-2); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.875rem;
+            font-family: var(--font-body); color: var(--text-primary); transition: var(--transition); outline: none;
+        }
+        .form-input:focus, .form-textarea:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px var(--primary-glow); }
+        .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+        .form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+        .field-error { font-size: 0.75rem; color: var(--danger); margin-top: 2px; }
+
+        .form-actions { display: flex; align-items: center; gap: 12px; padding-top: 8px; }
+        .btn-save { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: var(--font-body); }
+        .btn-save:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-save svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+        .btn-cancel { display: inline-flex; align-items: center; padding: 10px 20px; background: var(--surface-2); color: var(--text-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: var(--transition); }
+        .btn-cancel:hover { background: var(--border-light); color: var(--text-primary); }
+    </style>
+}
+
+<!-- ── Page Header ── -->
+<div class="page-header animate-in">
+    <h1 class="page-title">Edit Category</h1>
+    <p class="page-subtitle">Update category information</p>
+</div>
+
+<!-- ── Form Card ── -->
+<div class="form-card animate-in delay-1">
+    <div class="form-card-header">
+        <div>
+            <div class="form-card-title">Category Details</div>
+            <div class="form-card-subtitle">Make your changes below</div>
+        </div>
+        <span class="editing-badge">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editing: @Model.Name
+        </span>
+    </div>
+    <div class="form-card-body">
+
+        <form method="post" asp-controller="Category" asp-action="Edit">
+            @Html.AntiForgeryToken()
+
+            <!-- Hidden ID -->
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Name -->
+            <div class="form-group">
+                <label class="form-label" asp-for="Name">
+                    Category Name <span>*</span>
+                </label>
+                <input type="text"
+                       asp-for="Name"
+                       class="form-input"
+                       placeholder="e.g. Dresses, Tops, Accessories" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label class="form-label" asp-for="Description">
+                    Description <small style="color:var(--text-muted);font-weight:400;">(optional)</small>
+                </label>
+                <textarea asp-for="Description"
+                          class="form-textarea"
+                          placeholder="Brief description of this category..."></textarea>
+                <span asp-validation-for="Description" class="field-error"></span>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Update Category
+                </button>
+                <a href="/Category/Index" class="btn-cancel">Cancel</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
