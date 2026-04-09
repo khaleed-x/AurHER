@@ -348,12 +348,6 @@ namespace AurHER.Migrations
                     b.Property<int>("ReservedStock")
                         .HasColumnType("integer");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<string>("SKU")
                         .IsRequired()
                         .HasColumnType("text");

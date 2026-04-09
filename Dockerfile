@@ -2,6 +2,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y libkrb5-3
+
 COPY . ./
 RUN dotnet restore
 RUN dotnet publish -c Release -o out
