@@ -9,6 +9,7 @@
     using Microsoft.AspNetCore.RateLimiting;
     using System.Threading.RateLimiting;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+    using Microsoft.EntityFrameworkCore.Diagnostics;
 
 
     var builder = WebApplication.CreateBuilder(args);
