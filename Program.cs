@@ -49,8 +49,7 @@
     }
 
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString)
-           .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        options.UseNpgsql(connectionString));
 
 
 
@@ -116,7 +115,15 @@
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
+        try
+        {
+            db.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Migration failed: " + ex.Message);
+        }
+        
     }
     // Error handling
     if (!app.Environment.IsDevelopment())
@@ -140,5 +147,7 @@
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
 
-    app.Urls.Add("http://0.0.0.0:5271");
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+    app.Urls.Add($"http://0.0.0.0:{port}");
+
     app.Run();
