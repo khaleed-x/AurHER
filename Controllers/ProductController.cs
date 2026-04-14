@@ -195,7 +195,7 @@ namespace AurHER.Controllers
             var result = await _productService.AddImageAsync(productId, file, isPrimary);
             TempData[result ? "SuccessMessage" : "ErrorMessage"] = result
                 ? "Image uploaded successfully!"
-                : "Invalid file type. Only JPG, PNG and WEBP are allowed.";
+                : "Invalid file type OR Uploaded File is too large. Only JPG, PNG, WEBP and Files <= 10mb, are allowed. ";
 
             return RedirectToAction("Details", new { id = productId });
         }
