@@ -1,3 +1,4 @@
+using AurHER.Services.Interfaces;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
