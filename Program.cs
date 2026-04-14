@@ -10,6 +10,7 @@
     using System.Threading.RateLimiting;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     using Microsoft.EntityFrameworkCore.Diagnostics;
+    using Microsoft.AspNetCore.HttpOverrides;
 
 
     var builder = WebApplication.CreateBuilder(args);
@@ -75,6 +76,7 @@
     builder.Services.AddScoped<ICleanupService, CleanupService>();
     builder.Services.AddHostedService<CleanupBackgroundService>();
     builder.Services.AddScoped<IDeliveryLocationService, DeliveryLocationService>();
+    builder.Services.AddScoped<IImageCompressionService, ImageCompressionService>();
 
     // Register repositories
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -132,6 +134,15 @@
         app.UseHsts();
         app.UseHttpsRedirection();
     }
+
+
+
+    var app = builder.Build();
+
+    app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    });
 
     // Middleware order are IMPORTANT 
 

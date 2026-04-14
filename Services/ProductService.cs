@@ -193,7 +193,7 @@ namespace AurHER.Services
         public async Task<bool> UpdateVariantAsync(UpdateVariantDto dto)
         {
             var variant = await _context.ProductVariants.FindAsync(dto.Id);
-            if (variant == null) return false;
+            if (variant == null ) return false;
 
             // Check duplicate SKU — ignore current variant
             var skuExists = await _context.ProductVariants
@@ -238,26 +238,28 @@ namespace AurHER.Services
         public async Task<bool> AddImageAsync(int productId, IFormFile file, bool isPrimary)
         {
             if (file == null || file.Length == 0) return false;
+            if (file.Length > 5 * 1024 * 1024)
+                return false;
 
             // Validate file type
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
             var extension = Path.GetExtension(file.FileName).ToLower();
             if (!allowedExtensions.Contains(extension)) return false;
 
+              // Compress and resize image
+            var compressedBytes = await _imageCompressionService.CompressAndResizeAsync(file, 800, 800, 75);
+
             // Create folder: wwwroot/images/products/{productId}/
             var folderPath = Path.Combine(
                 _environment.WebRootPath, "images", "products", productId.ToString());
             Directory.CreateDirectory(folderPath);
 
-            // Generate unique filename
-            var fileName = $"{Guid.NewGuid()}{extension}";
+            // Generate unique filename  with .webp extension
+            var fileName = $"{Guid.NewGuid()}.webp";
             var filePath = Path.Combine(folderPath, fileName);
 
-            // Save file
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+             // Save compressed image
+             await File.WriteAllBytesAsync(filePath, compressedBytes);
 
             // If this is primary, unset other primary images
             if (isPrimary)
