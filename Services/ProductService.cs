@@ -14,16 +14,18 @@ namespace AurHER.Services
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly INotificationService _notificationService;
-
+        private readonly IImageCompressionService _imageCompressionService;
         public ProductService(
             IProductRepository productRepository,
             AppDbContext context,
-            IWebHostEnvironment environment, INotificationService notificationService)
+            IWebHostEnvironment environment, INotificationService notificationService, 
+            IImageCompressionService imageCompressionService)
         {
             _productRepository = productRepository;
             _context = context;
             _environment = environment;
              _notificationService = notificationService;
+             _imageCompressionService = imageCompressionService;
         }
 
 
@@ -238,6 +240,7 @@ namespace AurHER.Services
         public async Task<bool> AddImageAsync(int productId, IFormFile file, bool isPrimary)
         {
             if (file == null || file.Length == 0) return false;
+            
             if (file.Length > 5 * 1024 * 1024)
                 return false;
 
@@ -248,6 +251,9 @@ namespace AurHER.Services
 
               // Compress and resize image
             var compressedBytes = await _imageCompressionService.CompressAndResizeAsync(file, 800, 800, 75);
+              
+                if (compressedBytes == null)
+                    return false;
 
             // Create folder: wwwroot/images/products/{productId}/
             var folderPath = Path.Combine(

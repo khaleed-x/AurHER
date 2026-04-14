@@ -137,7 +137,6 @@
 
 
 
-    var app = builder.Build();
 
     app.UseForwardedHeaders(new ForwardedHeadersOptions
     {
