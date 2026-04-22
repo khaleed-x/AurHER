@@ -13,6 +13,7 @@
     using Microsoft.AspNetCore.HttpOverrides;
 
 
+
     var builder = WebApplication.CreateBuilder(args);
 
 
@@ -56,6 +57,8 @@
 
     //Paystack
     builder.Services.Configure<PaystackSettings>(builder.Configuration.GetSection("PaystackSettings"));
+    //Cloudinary 
+    builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
     // Register custom services
     builder.Services.AddScoped<IAdminService, AdminService>();

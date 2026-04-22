@@ -5,6 +5,9 @@ using AurHER.Repositories.Interfaces;
 using AurHER.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+
 
 namespace AurHER.Services
 {
@@ -15,17 +18,20 @@ namespace AurHER.Services
         private readonly IWebHostEnvironment _environment;
         private readonly INotificationService _notificationService;
         private readonly IImageCompressionService _imageCompressionService;
+        private readonly Cloudinary _cloudinary;
         public ProductService(
             IProductRepository productRepository,
             AppDbContext context,
             IWebHostEnvironment environment, INotificationService notificationService, 
-            IImageCompressionService imageCompressionService)
+            IImageCompressionService imageCompressionService,
+            Cloudinary cloudinary)
         {
             _productRepository = productRepository;
             _context = context;
             _environment = environment;
              _notificationService = notificationService;
              _imageCompressionService = imageCompressionService;
+             _cloudinary = cloudinary;
         }
 
 
@@ -128,17 +134,34 @@ namespace AurHER.Services
             var product = await _productRepository.GetProductWithDetailsAsync(id);
             if (product == null) return false;
 
-            // Delete image files from wwwroot
-            if (product.Images != null)
-            {
-                foreach (var image in product.Images)
-                {
-                    DeleteImageFile(image.ImageUrl);
-                }
-            }
 
-            await _productRepository.DeleteAsync(id);
-            return true;
+                // Delete images from Cloudinary
+                if (product.Images != null)
+                {
+                    foreach (var image in product.Images)
+                    {
+                        if (!string.IsNullOrEmpty(image.ImageUrl) && image.ImageUrl.Contains("cloudinary.com"))
+                        {
+                            try
+                            {
+                                var publicId = ExtractPublicIdFromUrl(image.ImageUrl);
+                                if (!string.IsNullOrEmpty(publicId))
+                                {
+                                    await _cloudinary.DestroyAsync(new DeletionParams(publicId));
+                                }
+                            }
+                            catch
+                            {
+                                // Log error but continue
+                            }
+                        }
+                    }
+                }
+
+                await _productRepository.DeleteAsync(id);
+                return true;
+
+
         }
 
         public async Task<bool> ToggleProductStatusAsync(int id)
@@ -240,7 +263,7 @@ namespace AurHER.Services
         public async Task<bool> AddImageAsync(int productId, IFormFile file, bool isPrimary)
         {
             if (file == null || file.Length == 0) return false;
-            
+
             if (file.Length > 5 * 1024 * 1024)
                 return false;
 
@@ -255,17 +278,24 @@ namespace AurHER.Services
                 if (compressedBytes == null)
                     return false;
 
-            // Create folder: wwwroot/images/products/{productId}/
-            var folderPath = Path.Combine(
-                _environment.WebRootPath, "images", "products", productId.ToString());
-            Directory.CreateDirectory(folderPath);
+            using var stream = new MemoryStream(compressedBytes);
 
-            // Generate unique filename  with .webp extension
-            var fileName = $"{Guid.NewGuid()}.webp";
-            var filePath = Path.Combine(folderPath, fileName);
+        var fileName = $"{Guid.NewGuid()}.webp";
 
-             // Save compressed image
-             await File.WriteAllBytesAsync(filePath, compressedBytes);
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(fileName, stream),
+            Folder = $"products/{productId}"
+        };
+
+        var result = await _cloudinary.UploadAsync(uploadParams);
+
+        if (result.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+           return false;
+        }
+
+        var imageUrl = result.SecureUrl.ToString();
 
             // If this is primary, unset other primary images
             if (isPrimary)
@@ -281,7 +311,6 @@ namespace AurHER.Services
             }
 
             // Store path in DB
-            var imageUrl = $"/images/products/{productId}/{fileName}";
             var productImage = new ProductImage
             {
                 ProductId = productId,
@@ -299,8 +328,23 @@ namespace AurHER.Services
             var image = await _context.ProductImages.FindAsync(id);
             if (image == null) return false;
 
-            // Delete physical file
-            DeleteImageFile(image.ImageUrl);
+            // Delete from Cloudinary
+            if (!string.IsNullOrEmpty(image.ImageUrl) && image.ImageUrl.Contains("cloudinary.com"))
+            {
+                try
+                {
+                    var publicId = ExtractPublicIdFromUrl(image.ImageUrl);
+                    if (!string.IsNullOrEmpty(publicId))
+                    {
+                        var deletionParams = new DeletionParams(publicId);
+                        await _cloudinary.DestroyAsync(deletionParams);
+                    }
+                }
+                catch
+                {
+                    // Log error but continue with database deletion
+                }
+            }
 
             _context.ProductImages.Remove(image);
             await _context.SaveChangesAsync();
@@ -327,18 +371,39 @@ namespace AurHER.Services
             return true;
         }
 
-        // ── Private Helper ──
-
-        private void DeleteImageFile(string imageUrl)
+        private string ExtractPublicIdFromUrl(string imageUrl)
         {
-            if (string.IsNullOrEmpty(imageUrl)) return;
-
-            var fullPath = Path.Combine(_environment.WebRootPath,
-                imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-
-            if (File.Exists(fullPath))
+            try
             {
-                File.Delete(fullPath);
+                var uri = new Uri(imageUrl);
+                // Remove version number if present (e.g., /v1234567890/...)
+                var path = uri.AbsolutePath;
+
+                // Get the path without extension
+                var withoutExtension = Path.GetFileNameWithoutExtension(path);
+
+                // Get the folder path
+                var segments = path.Split('/');
+                var folderSegments = segments.SkipLast(1).ToList();
+
+                // Remove version segment if it starts with 'v' and is numeric
+                if (folderSegments.Count > 0)
+                {
+                    var lastFolder = folderSegments.Last();
+                    if (lastFolder.StartsWith("v") && lastFolder.Length > 1 && long.TryParse(lastFolder.Substring(1), out _))
+                    {
+                        folderSegments.RemoveAt(folderSegments.Count - 1);
+                    }
+                }
+
+                var folder = string.Join("/", folderSegments).TrimStart('/');
+                var fileName = withoutExtension;
+
+                return string.IsNullOrEmpty(folder) ? fileName : $"{folder}/{fileName}";
+            }
+            catch
+            {
+                return null;
             }
         }
     }

@@ -9,3 +9,5 @@ namespace AurHER.Models
         public string CallbackUrl { get; set; } = string.Empty;
     }
 }
+
+
