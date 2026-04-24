@@ -155,9 +155,9 @@ builder.Services.AddScoped<IAdminService, AdminService>();
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
     });
 
-    // Middleware order are IMPORTANT 
+// Middleware order are IMPORTANT 
 
-
+    app.UseDeveloperExceptionPage();
     app.UseStaticFiles();
 
     app.UseRouting();
