@@ -376,30 +376,30 @@ namespace AurHER.Services
             try
             {
                 var uri = new Uri(imageUrl);
-                // Remove version number if present (e.g., /v1234567890/...)
                 var path = uri.AbsolutePath;
 
-                // Get the path without extension
-                var withoutExtension = Path.GetFileNameWithoutExtension(path);
+                // Find "/upload/" — everything useful is after this
+                var uploadIndex = path.IndexOf("/upload/");
+                if (uploadIndex < 0) return null;
 
-                // Get the folder path
-                var segments = path.Split('/');
-                var folderSegments = segments.SkipLast(1).ToList();
+                var afterUpload = path.Substring(uploadIndex + "/upload/".Length);
+                // afterUpload = "v1234567890/products/123/abc123.webp"
 
-                // Remove version segment if it starts with 'v' and is numeric
-                if (folderSegments.Count > 0)
-                {
-                    var lastFolder = folderSegments.Last();
-                    if (lastFolder.StartsWith("v") && lastFolder.Length > 1 && long.TryParse(lastFolder.Substring(1), out _))
-                    {
-                        folderSegments.RemoveAt(folderSegments.Count - 1);
-                    }
-                }
+                var segments = afterUpload.Split('/');
 
-                var folder = string.Join("/", folderSegments).TrimStart('/');
-                var fileName = withoutExtension;
+                // Skip version segment if it starts with 'v' followed by digits
+                int startIndex = 0;
+                if (segments[0].StartsWith("v") && long.TryParse(segments[0].Substring(1), out _))
+                    startIndex = 1;
 
-                return string.IsNullOrEmpty(folder) ? fileName : $"{folder}/{fileName}";
+                var relevant = segments.Skip(startIndex).ToArray();
+                // relevant = ["products", "123", "abc123.webp"]
+
+                // Strip extension from last segment
+                relevant[relevant.Length - 1] = Path.GetFileNameWithoutExtension(relevant.Last());
+
+                return string.Join("/", relevant);
+                // returns "products/123/abc123"  ← 
             }
             catch
             {
