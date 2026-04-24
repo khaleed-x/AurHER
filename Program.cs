@@ -11,7 +11,8 @@
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.AspNetCore.HttpOverrides;
-
+    using  CloudinaryDotNet;
+    using Microsoft.Extensions.Options;
 
 
     var builder = WebApplication.CreateBuilder(args);
@@ -60,8 +61,16 @@
     //Cloudinary 
     builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
-    // Register custom services
-    builder.Services.AddScoped<IAdminService, AdminService>();
+    builder.Services.AddSingleton<Cloudinary>(sp =>
+    {
+    var settings = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+    return new Cloudinary(account);
+    });
+
+
+// Register custom services
+builder.Services.AddScoped<IAdminService, AdminService>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<ICollectionService, CollectionService>();
     builder.Services.AddScoped<IProductService, ProductService>();
