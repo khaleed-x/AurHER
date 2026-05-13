@@ -8,7 +8,7 @@
     overflow: hidden;
 }
 .hero {
-    background-image: url('/images/hero-bg.jpg');
+    background-image: url('/images/hero-bg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
