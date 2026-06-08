@@ -186,18 +186,20 @@ namespace AurHER.Controllers
         [HttpPost]
         public async Task<IActionResult> AddImage(int productId, IFormFile file, bool isPrimary)
         {
-            if (file == null || file.Length == 0)
-            {
-                TempData["ErrorMessage"] = "Please select an image file!";
+           
+                if (file == null || file.Length == 0)
+                {
+                    TempData["ErrorMessage"] = "Please select an image file!";
+                    return RedirectToAction("Details", new { id = productId });
+                }
+
+                var result = await _productService.AddImageAsync(productId, file, isPrimary);
+                TempData[result ? "SuccessMessage" : "ErrorMessage"] = result
+                    ? "Image uploaded successfully!"
+                    : "Invalid file type OR Uploaded File is too large. Only JPG, PNG, WEBP and Files <= 10mb, are allowed. ";
+
                 return RedirectToAction("Details", new { id = productId });
-            }
-
-            var result = await _productService.AddImageAsync(productId, file, isPrimary);
-            TempData[result ? "SuccessMessage" : "ErrorMessage"] = result
-                ? "Image uploaded successfully!"
-                : "Invalid file type OR Uploaded File is too large. Only JPG, PNG, WEBP and Files <= 10mb, are allowed. ";
-
-            return RedirectToAction("Details", new { id = productId });
+          
         }
 
        
