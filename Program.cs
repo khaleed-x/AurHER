@@ -60,7 +60,6 @@ builder.Services.AddScoped<IAdminService, AdminService>();
     builder.Services.AddScoped<ICheckoutService, CheckoutService>();
     builder.Services.AddScoped<IOrderTrackingService, OrderTrackingService>();
 
-    builder.Services.AddScoped<IPaystackService, PaystackService>();
     builder.Services.AddHttpClient<IPaystackService, PaystackService>();
     builder.Services.AddScoped<IPaymentService, PaymentService>();
     builder.Services.AddScoped<ICleanupService, CleanupService>();
@@ -120,16 +119,11 @@ if (app.Environment.IsDevelopment())
     }
 
 
-
-
-    app.UseForwardedHeaders(new ForwardedHeadersOptions
-    {
-        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-    });
-
 // Middleware order are IMPORTANT 
 
-    app.UseDeveloperExceptionPage();
+
+    app.UseForwardedHeaders();
+
     app.UseStaticFiles();
 
     app.UseRouting();
