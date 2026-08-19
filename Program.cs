@@ -115,14 +115,14 @@ if (app.Environment.IsDevelopment())
     {
         app.UseExceptionHandler("/Home/Error");
         app.UseHsts();
-        app.UseHttpsRedirection();
+        // app.UseHttpsRedirection();
     }
 
 
 // Middleware order are IMPORTANT 
 
 
-    app.UseForwardedHeaders();
+    // app.UseForwardedHeaders();
 
     app.UseStaticFiles();
 
