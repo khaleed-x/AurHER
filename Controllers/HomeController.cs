@@ -17,5 +17,10 @@ namespace AurHER.Controllers
             var homeData = await _shopService.GetHomePageDataAsync();
             return View(homeData);
         }
+
+        public async Task<IActionResult> Error()
+        {
+            return View();
+        }
     }
 }

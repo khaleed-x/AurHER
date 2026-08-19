@@ -163,7 +163,6 @@ dotnet run
 
 ## Future Improvements
 
-- Docker support
 - Product recommendations
 - Redis caching
 - Advanced search
