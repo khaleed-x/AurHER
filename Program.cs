@@ -19,12 +19,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 
-// builder.Services.Configure<ForwardedHeadersOptions>(options =>
-// {
-//     options.ForwardedHeaders =
-//         ForwardedHeaders.XForwardedFor |
-//         ForwardedHeaders.XForwardedProto;
-// });
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+});
 
 
 // Database
@@ -113,16 +113,16 @@ if (app.Environment.IsDevelopment())
     }
     else
     {
-        app.UseExceptionHandler("/Home/Error");
+        // app.UseExceptionHandler("/Home/Error");
         app.UseHsts();
-        // app.UseHttpsRedirection();
+        app.UseHttpsRedirection();
     }
 
 
 // Middleware order are IMPORTANT 
 
 
-    // app.UseForwardedHeaders();
+    app.UseForwardedHeaders();
 
     app.UseStaticFiles();
 
