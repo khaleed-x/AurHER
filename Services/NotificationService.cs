@@ -20,7 +20,7 @@ namespace AurHER.Services
             _logger = logger;
         }
 
-        // ── Email ──
+        // Email
         public async Task SendEmailAsync(string to, string subject, string body)
         {
             try
@@ -54,7 +54,7 @@ namespace AurHER.Services
             }
         }
 
-        // ── SMS ──
+        //  SMS 
         public async Task SendSmsAsync(string to, string message)
         {
             try
@@ -106,7 +106,7 @@ namespace AurHER.Services
 
         }
 
-        // ── Low Stock Notification ──
+        //  Low Stock Notification 
         public async Task NotifyLowStockAsync(string productName, string sku, int quantity)
         {
             var adminEmail = _config["AdminContact:Email"]!;
@@ -115,7 +115,7 @@ namespace AurHER.Services
             await SendEmailAsync(adminEmail, subject, body);
         }
 
-        // ── Out of Stock Notification ──
+        //  Out of Stock Notification 
         public async Task NotifyOutOfStockAsync(string productName, string sku)
         {
             var adminEmail = _config["AdminContact:Email"]!;
@@ -129,7 +129,7 @@ namespace AurHER.Services
             await SendSmsAsync(adminPhone, sms);
         }
 
-        // ── Order Status Changed ──
+        // Order Status Changed 
         public async Task NotifyOrderStatusChangedAsync(string customerEmail, string customerName, string confirmationCode, string newStatus)
         {
             var subject = $"Your AurHER Order #{confirmationCode} has been {newStatus}";

@@ -15,49 +15,27 @@
     using Microsoft.Extensions.Options;
 
 
-    var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHealthChecks();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+});
+
+
+// Database
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration
+        .GetConnectionString("DefaultConnection")));
 
 
 
-    //local db connection string
-    var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
-
-    // Check if running on Render (uses DATABASE_URL)
-    var databaseUrl = builder.Configuration["DATABASE_URL"];
-
-    if (!string.IsNullOrEmpty(databaseUrl))
-    {
-        var uri = new Uri(databaseUrl);
-        var userInfo = uri.UserInfo.Split(':');
-
-        // Handle case when port is not specified (returns -1)
-        int port = uri.Port;
-        if (port <= 0)
-        {
-            port = 5432; // Default PostgreSQL port
-        }
-
-        var builderConn = new Npgsql.NpgsqlConnectionStringBuilder
-        {
-            Host = uri.Host,
-            Port = port,  // Use the validated port
-            Username = userInfo[0],
-            Password = userInfo[1],
-            Database = uri.AbsolutePath.Trim('/'),
-            SslMode = Npgsql.SslMode.Require,
-        
-        };
-
-        connectionString = builderConn.ToString();
-    }
-
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
-
-
-
-    //Paystack
-    builder.Services.Configure<PaystackSettings>(builder.Configuration.GetSection("PaystackSettings"));
+//Paystack
+builder.Services.Configure<PaystackSettings>(builder.Configuration.GetSection("PaystackSettings"));
     //Cloudinary 
     builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
@@ -125,22 +103,16 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 
     var app = builder.Build();
 
+    app.MapHealthChecks("/health");
 
-    using (var scope = app.Services.CreateScope())
+
+// Error handling
+if (app.Environment.IsDevelopment())
     {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        try
-        {
-            db.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Migration failed: " + ex.Message);
-        }
+       app.UseDeveloperExceptionPage();
 
     }
-    // Error handling
-    if (!app.Environment.IsDevelopment())
+    else
     {
         app.UseExceptionHandler("/Home/Error");
         app.UseHsts();
