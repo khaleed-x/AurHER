@@ -28,11 +28,48 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 
 // Database
+// Accepts either a key/value Npgsql string or a postgres:// / postgresql:// URL (Supabase, Render).
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection is not set. On Render add the env var ConnectionStrings__DefaultConnection.");
+
+if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+    connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+{
+    var uri = new Uri(connectionString);
+    // Split only on the first ':' and URL-decode, so passwords containing ':' or %40 etc. work
+    var userInfo = uri.UserInfo.Split(':', 2);
+    var username = Uri.UnescapeDataString(userInfo[0]);
+    var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+    var port = uri.Port > 0 ? uri.Port : 5432;
+
+    connectionString =
+        $"Host={uri.Host};Port={port};Database={uri.AbsolutePath.TrimStart('/')};" +
+        $"Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+}
+
+// Supabase transaction pooler (port 6543) does not support prepared statements / connection reset
+if (connectionString.Contains("Port=6543", StringComparison.OrdinalIgnoreCase) &&
+    !connectionString.Contains("No Reset On Close", StringComparison.OrdinalIgnoreCase))
+{
+    connectionString = connectionString.TrimEnd(';') + ";No Reset On Close=true;Max Auto Prepare=0";
+}
+
+// Log host only (never the password) so Render logs show where we're connecting
+try
+{
+    var csb = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+    Console.WriteLine($"[DB] Connecting to {csb.Host}:{csb.Port} db={csb.Database} user={csb.Username}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[DB] Connection string is malformed: {ex.Message}");
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration
-        .GetConnectionString("DefaultConnection")));
-
-
+    options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure(3)));
 
 //Paystack
 builder.Services.Configure<PaystackSettings>(builder.Configuration.GetSection("PaystackSettings"));
@@ -104,6 +141,15 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 
     app.MapHealthChecks("/health");
 
+    // Opt-in: set RUN_MIGRATIONS=true on Render to create/upgrade tables in an empty Supabase DB
+    if (string.Equals(Environment.GetEnvironmentVariable("RUN_MIGRATIONS"), "true", StringComparison.OrdinalIgnoreCase))
+    {
+        using var migrationScope = app.Services.CreateScope();
+        var db = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+        Console.WriteLine("[DB] Migrations applied.");
+    }
+
 
 // Error handling
 if (app.Environment.IsDevelopment())
@@ -113,7 +159,7 @@ if (app.Environment.IsDevelopment())
     }
     else
     {
-        // app.UseExceptionHandler("/Home/Error");
+        app.UseMiddleware<AurHER.Middleware.MaintenanceMiddleware>();
         app.UseHsts();
         app.UseHttpsRedirection();
     }

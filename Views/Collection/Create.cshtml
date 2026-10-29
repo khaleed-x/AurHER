@@ -25,6 +25,12 @@
     <div class="form-card-body">
 
         <form method="post" asp-controller="Collection" asp-action="Create">
+        @if (ViewData.ModelState.TryGetValue("", out var __formErrors) && __formErrors.Errors.Count > 0)
+        {
+            <div class="alert alert-error" style="margin-bottom:16px;">
+                @foreach (var __e in __formErrors.Errors) { <div>@__e.ErrorMessage</div> }
+            </div>
+        }
             @Html.AntiForgeryToken()
 
             <!-- Name -->

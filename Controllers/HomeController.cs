@@ -18,7 +18,8 @@ namespace AurHER.Controllers
             return View(homeData);
         }
 
-        public async Task<IActionResult> Error()
+        [Route("Home/Error")]
+        public IActionResult Error()
         {
             return View();
         }
