@@ -15,6 +15,8 @@
     using Microsoft.Extensions.Options;
 
 
+DotNetEnv.Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
@@ -150,6 +152,16 @@ builder.Services.AddScoped<IAdminService, AdminService>();
         Console.WriteLine("[DB] Migrations applied.");
     }
 
+
+    // Opt-in demo data: SEED_DATA=true to insert, SEED_DATA=clear to remove it again
+    var seedMode = Environment.GetEnvironmentVariable("SEED_DATA");
+    if (!string.IsNullOrWhiteSpace(seedMode) && !seedMode.Equals("false", StringComparison.OrdinalIgnoreCase))
+    {
+        using var seedScope = app.Services.CreateScope();
+        var seedDb = seedScope.ServiceProvider.GetRequiredService<AurHER.Data.AppDbContext>();
+        var seedLogger = seedScope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seeder");
+        await AurHER.Data.DataSeeder.RunAsync(seedDb, seedMode, seedLogger);
+    }
 
 // Error handling
 if (app.Environment.IsDevelopment())
